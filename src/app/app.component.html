@@ -1,0 +1,5 @@
+﻿<bc-layout [class]="layout.routeClass | async">
+    <bc-toolbar></bc-toolbar>
+    <router-outlet></router-outlet>
+    <bc-footer *ngIf="!useSmallFooter"></bc-footer>
+</bc-layout>

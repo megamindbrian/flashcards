@@ -1,0 +1,47 @@
+{
+    "rules": {
+        "mail": {
+            ".read": "true",
+            ".write": "true"
+        },
+        "pack": {
+            ".read": "true",
+            ".write": "true"
+        },
+        "user": {
+            "$uid": {
+                ".read": "$uid === auth.uid || auth.token.email.toLowerCase() === data.child('username').val() || $uid === auth.token.email.toLowerCase().replace('.', '_').replace('$', '_').replace('/', '_').replace('#', '_').replace('[', '_').replace(']', '_')",
+                ".write": "$uid === auth.uid || auth.token.email.toLowerCase() === data.child('username').val() || $uid === auth.token.email.toLowerCase().replace('.', '_').replace('$', '_').replace('/', '_').replace('#', '_').replace('[', '_').replace(']', '_')"
+            }
+        },
+        "user_pack": {
+            ".read": "true",
+            "$id": {
+                ".read": "data.child('username').val() === 'brian@studysauce.com'",
+                ".write": "true"
+            }
+        },
+        "roles": {
+            "$role": {
+                "$uid": {
+                    ".read": "$uid === auth.token.email.toLowerCase().replace('.', '_').replace('$', '_').replace('/', '_').replace('#', '_').replace('[', '_').replace(']', '_')"
+                }
+            },
+            ".write": "false"
+        },
+        "groups": {
+            "$role": {
+                "$uid": {
+                    ".read": "$uid === auth.token.email.toLowerCase().replace('.', '_').replace('$', '_').replace('/', '_').replace('#', '_').replace('[', '_').replace(']', '_')"
+                }
+            },
+            ".write": "false"
+        },
+        "surveys": {
+            "$uid": {
+                ".read": "$uid.contains('_anonymous') || $uid.contains(auth.token.email.toLowerCase().replace('.', '_').replace('$', '_').replace('/', '_').replace('#', '_').replace('[', '_').replace(']', '_'))",
+                ".write": "$uid.contains('_anonymous') || $uid.contains(auth.token.email.toLowerCase().replace('.', '_').replace('$', '_').replace('/', '_').replace('#', '_').replace('[', '_').replace(']', '_'))"
+            }
+        }
+    }
+}

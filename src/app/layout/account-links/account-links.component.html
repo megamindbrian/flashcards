@@ -1,0 +1,13 @@
+﻿<button md-button routerLink="/account"
+        *ngIf="loggedIn">My Account
+</button>
+<button md-button routerLink="/auth/logout"
+        *ngIf="loggedIn">
+    {{ 'LAYOUT.ACCOUNTLINKS.LOGOUT' | translate }}
+</button>
+<button md-button routerLink="/auth/login" *ngIf="!loggedIn">
+    {{ 'LAYOUT.ACCOUNTLINKS.LOGIN' | translate }}
+</button>
+<button md-button routerLink="/auth/register" *ngIf="!loggedIn">
+    {{ 'LAYOUT.ACCOUNTLINKS.REGISTER' | translate }}
+</button>

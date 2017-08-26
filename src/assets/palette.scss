@@ -1,0 +1,92 @@
+@import '~@angular/material/theming';
+@import '../assets/colors';
+
+$act-orange-map: (
+    50: $act-orange,
+    100: $act-orange,
+    200: $act-orange,
+    300: $act-orange,
+    400: $act-orange,
+    500: $act-orange,
+    600: $act-orange,
+    700: $act-orange,
+    800: $act-orange,
+    900: $act-orange,
+    A100: $act-orange,
+    A200: $act-orange,
+    A400: $act-orange,
+    A700: $act-orange,
+    contrast: (
+        50: $pure-white,
+        100: $pure-white,
+        200: $pure-white,
+        300: $pure-white,
+        400: $pure-white,
+        500: $pure-white,
+        600: $pure-white,
+        700: $pure-white,
+        800: $pure-white,
+        900: $pure-white,
+        A100: $pure-white,
+        A200: $pure-white,
+        A400: $pure-white,
+        A700: $pure-white,
+    )
+);
+
+$act-link-map: (
+    50: $brand-primary,
+    100: $brand-primary,
+    200: $brand-primary,
+    300: $brand-primary,
+    400: $brand-primary,
+    500: $brand-primary,
+    600: $brand-primary,
+    700: $brand-primary,
+    800: $brand-primary,
+    900: $brand-primary,
+    A100: $brand-primary,
+    A200: $brand-primary,
+    A400: $brand-primary,
+    A700: $brand-primary,
+    contrast: (
+        50: $pure-white,
+        100: $pure-white,
+        200: $pure-white,
+        300: $pure-white,
+        400: $pure-white,
+        500: $pure-white,
+        600: $pure-white,
+        700: $pure-white,
+        800: $pure-white,
+        900: $pure-white,
+        A100: $pure-white,
+        A200: $pure-white,
+        A400: $pure-white,
+        A700: $pure-white,
+    )
+);
+
+$theme: (
+    primary: map_merge($act-orange-map, (
+        default: $act-orange,
+        lighter: $act-orange,
+        darker: $act-orange,
+        default-contrast: $pure-white,
+        lighter-contrast: $pure-white,
+        darker-contrast: $pure-white
+    )),
+    accent: map_merge($act-link-map, (
+        default: $brand-primary,
+        lighter: $brand-primary,
+        darker: $brand-primary,
+        default-contrast: $pure-white,
+        lighter-contrast: $pure-white,
+        darker-contrast: $pure-white
+    )),
+    warn: mat-palette($mat-red),
+    is-dark: false,
+    foreground: $mat-light-theme-foreground,
+    background: $mat-light-theme-background,
+);
+

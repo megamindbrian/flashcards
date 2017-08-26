@@ -1,0 +1,55 @@
+@import './colors';
+@import './palette';
+@import './tiles';
+
+// load theme colors
+@include mat-core();
+@include angular-material-theme($theme);
+
+$custom-typography: mat-typography-config(
+    $font-family: '"Poppins", Arial, sans-serif',
+    $headline: mat-typography-level(24px, 48px, 400),
+    $body-1: mat-typography-level(18px, 24px, 400),
+    $button: mat-typography-level(18px, 24px, 400)
+);
+/*
+display-4, display-3, display-2 and display-1 - Large, one-off headers, usually at the top of the page (e.g. a hero header).
+headline - Section heading corresponding to the <h1> tag.
+title - Section heading corresponding to the <h2> tag.
+subheading-2 - Section heading corresponding to the <h3> tag.
+subheading-1 - Section heading corresponding to the <h4> tag.
+body-1 - Base body text.
+body-2 - Bolder body text.
+caption - Smaller body and hint text.
+button - Buttons and anchors.
+ */
+
+@include angular-material-typography($custom-typography);
+
+*, *:before, *:after {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+    color: $dark-blue;
+    font-size: 18px;
+    text-rendering: geometricPrecision;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+
+img, video, canvas, svg {
+    max-width: 100%;
+}
+
+small {
+    font-weight: 400;
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: 400;
+}
+
+@import "material-overrides";

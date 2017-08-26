@@ -1,0 +1,75 @@
+﻿@import "../../../assets/colors";
+
+span[flex] {
+    flex: 1 1 auto;
+}
+
+md-toolbar {
+    padding: 0;
+    min-height: 40px;
+    top: 0;
+    width: 100%;
+    left: 0;
+}
+
+md-toolbar /deep/ a, md-toolbar /deep/ button, md-toolbar /deep/ .mat-button {
+    color: $light-light-gray;
+}
+
+/deep/ .home md-toolbar {
+    position: fixed;
+}
+
+/deep/ md-toolbar.mat-toolbar {
+    background: $dark-blue;
+}
+
+/deep/ .home md-toolbar.mat-toolbar {
+    background: transparent;
+}
+
+md-toolbar /deep/ .mat-toolbar-row {
+    height: auto;
+    display: flex;
+}
+
+#site-name {
+    font-family: 'Ubuntu', Arial, sans-serif;
+    width: 350px;
+    display: inline-block;
+    clear: left;
+    text-align: left;
+    padding-left: 100px;
+    vertical-align: top;
+    color: #F90;
+    flex-shrink: 0;
+
+    /deep/ a, /deep/ button, /deep/ .mat-button {
+        color: $pure-white;
+    }
+
+    & a {
+        padding: 0;
+        display: inline-block;
+        color: #F90;
+    }
+
+    & a > span {
+        font-size: 32px;
+        line-height: 42px;
+        display: inline-block;
+        white-space: normal;
+    }
+
+    & a > * {
+        vertical-align: top;
+    }
+
+    & img {
+        width: 65px;
+        margin: 0 5px;
+        max-height: 38px;
+        max-width: 38px;
+    }
+
+}

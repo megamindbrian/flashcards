@@ -1,0 +1,68 @@
+{
+    "ACCOUNT": {
+    },
+    "AUTH": {
+        "FORGOTPASSWORD": {
+            "TITLE": "Forgot Password",
+            "EMAIL": "Email",
+            "NEXT": "Next",
+            "REGISTER": "Register",
+            "LOGIN": "Login"
+        },
+        "LOGIN": {
+            "TITLE": "Login",
+            "SUBTITLE": "Start by entering your email address",
+            "EMAIL": "Email",
+            "PASSWORD": "Password",
+            "LOGIN": "Login",
+            "FORGOT": "Forgot Password?",
+            "REGISTERTITLE": "Register",
+            "REGISTERSUBMIT": "Register",
+            "REGISTER": "Register",
+            "CANCEL": "Cancel",
+            "ERRORALREADYREGISTERED": "Already registered with that email address.",
+            "ERRORFORGOT": "Please check your email, if you have an account you will receive a password reset link.",
+            "ERRORINCOMPLETE": "Please fill out all required fields.",
+            "ERROR": "Could not login. Check your email and password.",
+            "ERRORREGISTER": "Could not register. You may already have an account with this email address.",
+            "ERRORINCORRECT": "Incorrect credentials.",
+            "ERROREMAIL": "Email address is invalid.",
+            "ERRORPASSWORD": "Passwords must contain letters, numbers, symbols, and be a minimum of 8 characters long.",
+            "ALREADYHAVEACCOUNT": "Already have an account?",
+            "ALREADYLOGGED": "You are logged in as {{first}}. Click to log out to use a different account.",
+            "LOGOUT": "Log out"
+        },
+        "REGISTERFORM": {
+            "FIRST": "First name",
+            "LAST": "Last name",
+            "EMAIL": "Email",
+            "PASSWORD": "Password",
+            "COMPANY": "Company",
+            "PHONE": "Phone"
+        },
+        "RESETPASSWORD": {
+            "TITLE": "Forgot Password",
+            "CODE": "Verification Code",
+            "PASSWORD": "New Password",
+            "SUBMIT": "Reset Password"
+        }
+    },
+    "LAYOUT": {
+        "ACCOUNTLINKS": {
+            "LOGOUT": "Log Out",
+            "LOGIN": "Log In",
+            "REGISTER": "Register"
+        },
+        "NOTFOUND": {
+            "TITLE": "404: Not Found",
+            "MESSAGE": "Hey! It looks like this page doesn't exist yet.",
+            "SUBMIT": "Take Me Home"
+        },
+        "LANGUAGE": {
+            "en": "English",
+            "fr": "French",
+            "tr": "Translator",
+            "SELECT": "Change language"
+        }
+    }
+}

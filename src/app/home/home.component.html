@@ -1,0 +1,17 @@
+<div class="big-button">
+    <a routerLink="/cards/1"></a>
+</div>
+<div class="pack-summary">
+    <h2>
+        <label>Today’s cards</label>
+        <label>1537 cards</label>
+    </h2>
+    <div class="pack-row" *ngFor="let pack of (home.summary | async)">
+        <a routerLink="/cards/1">
+            <label>
+                <span>{{ pack.getTitle() }}</span>
+            </label>
+            <label>15</label>
+        </a>
+    </div>
+</div>

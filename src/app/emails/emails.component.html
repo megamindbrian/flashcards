@@ -1,0 +1,7 @@
+<div class="contain">
+    <table>
+        <tr *ngFor="let email of (emails.list | async)">
+            <td>{{email.getRecipient()}}</td>
+        </tr>
+    </table>
+</div>

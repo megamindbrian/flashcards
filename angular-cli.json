@@ -1,0 +1,57 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "project": {
+    "name": "studysauce"
+  },
+  "apps": [
+    {
+      "name": "studysauce",
+      "root": "src",
+      "outDir": "dist",
+      "assets": [
+        "assets",
+        "web.config"
+      ],
+      "index": "index.html",
+      "main": "main.ts",
+      "polyfills": "polyfills.ts",
+      "test": "test.ts",
+      "tsconfig": "../tsconfig.json",
+      "testTsconfig": "tsconfig.spec.json",
+      "prefix": "bc",
+      "styles": [
+        "./assets/layout.scss"
+      ],
+      "scripts": [ ],
+      "environmentSource": "./environments/environment.ts",
+      "environments": {
+        "test": "./environments/environment.dev.ts",
+        "staging": "./environments/environment.staging.ts",
+        "dev": "./environments/environment.dev.ts",
+        "prod": "./environments/environment.prod.ts"
+      }
+    }
+  ],
+  "lint": [
+    {
+      "project": "tsconfig.json"
+    }
+  ],
+  "test": {
+    "karma": {
+      "config": "./karma.conf.js"
+    }
+  },
+  "defaults": {
+    "styleExt": "css",
+    "component": {},
+    "serve": {
+      "compress": true,
+      "aot": true,
+      "prod": true,
+      "port": 9090,
+      "host": "0.0.0.0"
+    }
+  }
+}
+

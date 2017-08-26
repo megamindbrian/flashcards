@@ -1,0 +1,98 @@
+﻿<!doctype html>
+<html>
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <title>Act! E-Commerce</title>
+    <meta name="viewport"
+          content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width"/>
+    <link rel="shortcut icon" href="/assets/act-logo-circle.png">
+    <link rel="apple-touch-icon" href="/assets/act-logo-circle.png">
+    <link rel="icon" type="image/png" href="/assets/act-logo-circle.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+    <style>
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FE5000;
+        }
+
+        bc-app > .loading {
+            background: url(/assets/background.jpg) no-repeat 50% 50%;
+            background-size: cover;
+        }
+
+        .loading span {
+            position: relative;
+            height: 60px;
+            width: 60px;
+            display: inline-block;
+        }
+
+        .loading span:after {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            border: 2px solid;
+            border-top-color: transparent;
+            -webkit-animation: rotation 0.8s infinite cubic-bezier(.6, .3, .3, .6);
+            animation: rotation 0.8s infinite cubic-bezier(.6, .3, .3, .6);
+        }
+
+    </style>
+</head>
+<body>
+<bc-app>
+    <div class="loading"><span></span></div>
+</bc-app>
+<script type="text/javascript">
+    var _elqQ = _elqQ || [];
+    _elqQ.push(['elqSetSiteId', '1966950654']);
+    _elqQ.push(['elqTrackPageViewDisplayOptInBannerForAll']);
+    _elqQ.push(['elqGetCustomerGUID']);
+    (() => {
+        function async_load() {
+            var s = document.createElement('script');
+            s.type = 'text/javascript';
+            s.async = true;
+            s.src = '//img03.en25.com/i/elqCfg.min.js';
+            var x = document.getElementsByTagName('script')[0];
+            x.parentNode.insertBefore(s, x);
+        }
+
+        if (window.addEventListener) window.addEventListener('DOMContentLoaded', async_load, false);
+        else if (window.attachEvent) window.attachEvent('onload', async_load);
+    })();
+
+    function elqVisitorTrackingOptIn() {
+        _elqQ.push(['elqOptIn']);
+    }
+
+    function elqVisitorTrackingOptOut() {
+        _elqQ.push(['elqOptOut']);
+    }
+</script>
+</body>
+</html>

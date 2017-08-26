@@ -1,0 +1,79 @@
+@import '../../assets/colors';
+
+.big-button {
+    flex-basis: 40%;
+    width: 40%;
+    position: relative;
+    flex-shrink: 0;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.big-button a {
+    max-height: 200px;
+    background: url(/assets/shuffle_btn.png) no-repeat 0 0 transparent;
+    background-size: cover;
+    display: block;
+    width: 50%;
+    padding-bottom: 50%;
+}
+
+h2 {
+    display: flex;
+    border-bottom: 2px solid $dark-blue;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+h2 > * {
+    flex-basis: 50%;
+}
+
+h2 > *:last-child {
+    text-align: right;
+}
+
+:host {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 60px;
+}
+
+.pack-summary {
+    display: block;
+    background: $light-light-gray;
+    border: 1px solid $light-gray;
+    padding: 10px;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow: auto;
+    max-height: 100%;
+    min-height: 250px;
+    width: 60%;
+    flex-basis: 60%;
+    flex-shrink: 0;
+    flex-grow: 1;
+}
+
+.pack-summary a {
+    display: flex;
+}
+
+.pack-summary a > * {
+    flex-grow: 1;
+}
+
+.pack-summary a > *:last-child {
+    flex-basis: 0;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/deep/ .home .mat-sidenav-container {
+    background: url(/assets/neural_darkened.jpg) no-repeat center center #333;
+    background-size: cover;
+}

@@ -1,0 +1,7 @@
+﻿<button md-button aria-label="Open support menu" class="md-icon-button" [mdMenuTriggerFor]="menu">
+    {{ 'LAYOUT.SUPPORT.TITLE' | translate }}
+</button>
+<md-menu #menu="mdMenu" md-position-mode="target-right target" md-offset="0 42">
+    <button md-menu-item>{{ 'LAYOUT.SUPPORT.TRAINING' | translate }}</button>
+    <button md-menu-item disabled="disabled">{{ 'LAYOUT.SUPPORT.CHAT' | translate }}</button>
+</md-menu>

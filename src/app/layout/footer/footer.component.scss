@@ -1,0 +1,49 @@
+@import '../../../assets/colors';
+
+:host(bc-footer) {
+    display: block;
+    max-width: 100%;
+    background: none;
+    font-weight: bold;
+    font-size: 12px;
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px 0;
+    position: absolute;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+    display: inline;
+}
+
+li {
+    display: inline;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+}
+
+/deep/ body bc-footer {
+    color: $dark-blue;
+
+    a, button, .mat-button {
+        color: $dark-blue;
+    }
+}
+
+/deep/ body .home bc-footer {
+    color: $pure-white;
+
+    a, button, .mat-button {
+        color: $pure-white;
+    }
+}
