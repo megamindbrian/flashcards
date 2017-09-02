@@ -61,14 +61,14 @@ export class Card extends DbIdObject<Card> {
      * @ORM\OneToMany(targetEntity="Response", mappedBy="card", fetch="EXTRA_LAZY", indexBy="user")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected responses: FirebaseListObservable<Response> = FirebaseListFactory(this.$ref.child('responses'));
+    protected responses: FirebaseListObservable<Response>;
 
     /**
      * @ORM\OneToMany(targetEntity="Answer", mappedBy="card")
      * @ORM\OrderBy({"created" = "DESC"})
      * @var Answer[] answers
      */
-    protected answers: FirebaseListObservable<Answer> = FirebaseListFactory(this.$ref.child('answers'));
+    protected answers: FirebaseListObservable<Answer>;
 
     /**
      * @ORM\Column(type="boolean", name="deleted")

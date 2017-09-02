@@ -30,7 +30,7 @@ export class Session extends DbIdObject<Session> {
      * @ORM\OneToMany(targetEntity="Visit", mappedBy="session")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected visits: Array<Visit> = [];
+    protected visits: Array<Visit>;
 
     /**
      * Set id

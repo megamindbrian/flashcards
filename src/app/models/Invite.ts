@@ -69,7 +69,7 @@ export class Invite extends DbIdObject<Invite> {
     protected reminder: Date;
 
     /** @ORM\Column(name="properties", type="array", nullable=true) */
-    protected properties: { [index: string]: any } = [];
+    protected properties: { [index: string]: any };
 
     /**
      * @ORM\PrePersist

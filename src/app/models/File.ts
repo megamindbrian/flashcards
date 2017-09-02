@@ -39,7 +39,7 @@ export class File extends DbIdObject<File> {
     /**
      * @ORM\Column(type="array", name="parts", nullable=true)
      */
-    protected parts: Array<any> = [];
+    protected parts: Array<any>;
 
     /**
      * @ORM\Column(type="datetime", name="created")

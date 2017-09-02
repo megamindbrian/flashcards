@@ -5,7 +5,7 @@ import { Bundle } from './Bundle';
 import { BaseGroup } from './BaseGoup';
 import { File } from './File';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseListFactory, FirebaseListObservable } from 'angularfire2/database';
+import { FirebaseListObservable } from 'angularfire2/database';
 /**
  * @ORM\Entity
  * @ORM\Table(name="ss_group")
@@ -26,28 +26,28 @@ export class Group extends BaseGroup {
     /**
      * @ORM\OneToMany(targetEntity="Bundle", mappedBy="group", fetch="EXTRA_LAZY")
      */
-    protected bundles: Array<Bundle> = [];
+    protected bundles: Array<Bundle>;
 
     /**
      * @ORM\OneToMany(targetEntity="Invite", mappedBy="group", fetch="EXTRA_LAZY")
      */
-    protected invites: Array<Invite> = [];
+    protected invites: Array<Invite>;
 
     /**
      * @ORM\OneToMany(targetEntity="Pack", mappedBy="group", fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected packs: Array<Pack> = [];
+    protected packs: Array<Pack>;
 
     /**
      * @ORM\ManyToMany(targetEntity="Pack", mappedBy="groups", fetch="EXTRA_LAZY")
      */
-    protected groupPacks: FirebaseListObservable<Pack> = FirebaseListFactory(this.$ref.child('groupPacks'));
+    protected groupPacks: FirebaseListObservable<Pack>;
 
     /**
      * @ORM\ManyToMany(targetEntity="User", mappedBy="groups", fetch="EXTRA_LAZY")
      */
-    protected users: Array<User> = [];
+    protected users: Array<User>;
 
     /**
      * @ORM\ManyToOne(targetEntity="File")
@@ -65,7 +65,7 @@ export class Group extends BaseGroup {
      * @ORM\OneToMany(targetEntity="Group", mappedBy="parent", fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected subgroups: Array<Group> = [];
+    protected subgroups: Array<Group>;
 
     /**
      * @ORM\Column(type="boolean", name="deleted")

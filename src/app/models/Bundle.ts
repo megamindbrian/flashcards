@@ -1,12 +1,11 @@
 import { Group } from './Group';
 import { Pack } from './Pack';
+import { File } from './File';
 import { Payment } from './Payment';
 import { DbIdObject } from './DbIdObject';
-import {
-    FirebaseListFactory, FirebaseListObservable, FirebaseObjectFactory,
-    FirebaseObjectObservable
-} from 'angularfire2/database';
+import { FirebaseListFactory, FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
+import { GroupObjectFactory, PackListFactory, ResponseObjectFactory } from './Factories';
 
 /**
  * @ORM\Entity
@@ -29,7 +28,7 @@ export class Bundle extends DbIdObject<Bundle> {
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="bundles")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="$key", nullable=true)
      */
-    protected group: FirebaseObjectObservable<Group> = FirebaseObjectFactory(this.$ref.child('group'));
+    protected group_id: string;
 
     /**
      * @ORM\ManyToMany(targetEntity="Pack")
@@ -37,7 +36,7 @@ export class Bundle extends DbIdObject<Bundle> {
      *      joinColumns={@ORM\JoinColumn(name="bundle_id", referencedColumnName="$key")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="pack_id", referencedColumnName="$key")})
      */
-    protected packs: FirebaseListObservable<Pack> = FirebaseListFactory(this.$ref.child('packs'));
+    protected packs: Array<number>;
 
     /**
      * @ORM\Column(type="array", name="options", nullable=true)
@@ -78,7 +77,7 @@ export class Bundle extends DbIdObject<Bundle> {
      * @ORM\ManyToMany(targetEntity="Payment", mappedBy="bundles", fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected payments: Array<Payment> = [];
+    protected payments: FirebaseListObservable<Array<Payment>>;
 
     /**
      * @ORM\PrePersist
@@ -89,16 +88,25 @@ export class Bundle extends DbIdObject<Bundle> {
     }
 
     public getCardCount(): Observable<number> {
-        return this.getPacks().filter(p => !p.getDeleted()).flatMap(p => Observable.of(p.length));
+        return this.getPacks()
+            .flatMap(p => p.filter(pack => !pack.getDeleted()))
+            .map(p => p.length);
     }
 
     public getLogo(): Observable<File> {
         return this.getGroup().flatMap(g => {
-            if (typeof g !== 'undefined' && typeof g.getLogo() !== 'undefined') {
-                return Observable.of(g.getFile());
-            } else {
-                return this.getPacks().flatMap(p => p.getLogo().getFile());
-            }
+            return Observable.of(g.getFile());
+            /*
+             if (typeof g !== 'undefined' && typeof g.getLogo() !== 'undefined') {
+             } else {
+             return this.getPacks()
+             .flatMap((p: Array<Pack>) => Observable.merge(p.map((pack: Pack) => pack.getLogo())))
+             .toArray()
+             .flatMap((p: Array<File>) => Observable.merge(p.map((pack: File) => pack.getFile())))
+             .toArray()
+             .map(p => p.first());
+             }
+             */
         });
     }
 
@@ -283,9 +291,8 @@ export class Bundle extends DbIdObject<Bundle> {
      * @param group
      */
     public setGroup(group?: Group): Observable<this> {
-        return this.group.map(() => {
-            return this.$ref.child('group').set(group);
-        }).map(() => this);
+        this.group_id = group.getKey();
+        return Observable.of(this.$ref.child('group_id').set(this.group_id)).map(() => this);
     }
 
     /**
@@ -294,7 +301,7 @@ export class Bundle extends DbIdObject<Bundle> {
      * @return Group
      */
     public getGroup(): FirebaseObjectObservable<Group> {
-        return this.group;
+        return GroupObjectFactory(this.$ref.root.child('card/' + this.group_id));
     }
 
     /**
@@ -364,10 +371,10 @@ export class Bundle extends DbIdObject<Bundle> {
      * @return Bundle
      * @param pack
      */
-    public addPack(pack: Pack): this {
-        this.packs.push(pack);
-
-        return this;
+    public addPack(pack: Pack): Observable<this> {
+        return PackListFactory(this.$ref.child('packs'))
+            .flatMap(r => r.push(pack.getKey()))
+            .map(() => this);
     }
 
     /**
@@ -376,9 +383,9 @@ export class Bundle extends DbIdObject<Bundle> {
      * @param pack
      */
     public removePack(pack: Pack): Observable<Pack> {
-        return this.packs.map(p => {
-            return this.$ref.child('packs/' + p.indexOf(pack)).remove();
-        }).flatMap(() => this.packs);
+        return PackListFactory(this.$ref.child('packs'))
+            .flatMap(r => this.$ref.child('packs/' + r.indexOf(pack.getKey())).remove())
+            .flatMap(() => this.getPacks());
     }
 
     /**
@@ -386,8 +393,12 @@ export class Bundle extends DbIdObject<Bundle> {
      *
      * @return Array<Pack>
      */
-    public getPacks(): FirebaseListObservable<Pack> {
-        return this.packs;
+    public getPacks(): Observable<Array<Pack>> {
+        return FirebaseListFactory(this.$ref.child('responses'))
+            .flatMap(r => Observable.merge(r
+                .map((rid: string) => ResponseObjectFactory(this.$ref.root.child('response/' + rid)))))
+            .toArray()
+            .map(r => r.map(response => response as Response));
     }
 
     /**

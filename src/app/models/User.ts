@@ -7,10 +7,9 @@ import { UserPack } from './UserPack';
 import { BaseUser } from './BaseUser';
 import { Response } from './Response';
 import { File } from './File';
-import { FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2/database';
+import { FirebaseListObservable } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
-import * as firebase from 'firebase/app';
-import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
+
 /**
  * @ORM\Entity
  * @ORM\Table(name="ss_user",uniqueConstraints={
@@ -33,17 +32,6 @@ import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
  *      )
  * })
  */
-export function UserObjectFactory(r: firebase.database.Reference): FirebaseObjectObservable<User> {
-    return FirebaseObjectFactory<User>(
-        r,
-        (ref: firebase.database.Reference, exists: boolean, key: string) => new User(ref, exists, key));
-}
-
-export function UserListFactory(r: firebase.database.Reference): FirebaseListObservable<Array<User>> {
-    return FirebaseListFactory<User>(
-        r,
-        (ref: firebase.database.Reference, exists: boolean, key: string) => new User(ref, exists, key));
-}
 
 export class User extends BaseUser {
 
@@ -51,49 +39,49 @@ export class User extends BaseUser {
      * @ORM\OneToMany(targetEntity="Payment", mappedBy="user")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected payments: Array<Payment> = [];
+    protected payments: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\OneToMany(targetEntity="Visit", mappedBy="user", fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected visits: Array<Visit> = [];
+    protected visits: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\OneToMany(targetEntity="Invite", mappedBy="user")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected invites: Array<Invite> = [];
+    protected invites: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\OneToMany(targetEntity="Invite", mappedBy="invitee")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected invitees: FirebaseListObservable<Invite> = FirebaseListFactory(this.$ref.child('invitees'));
+    protected invitees: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\OneToMany(targetEntity="Pack", mappedBy="user")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected authored: FirebaseListObservable<Pack> = FirebaseListFactory(this.$ref.child('authored'));
+    protected authored: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\OneToMany(targetEntity="UserPack", mappedBy="user", fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected userPacks: FirebaseListObservable<UserPack> = FirebaseListFactory(this.$ref.child('userPacks'));
+    protected userPacks: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\OneToMany(targetEntity="File", mappedBy="user")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected files: Array<File> = [];
+    protected files: Array<File>;
 
     /**
      * @ORM\OneToMany(targetEntity="Response", mappedBy="user")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected responses: FirebaseListObservable<Response> = FirebaseListFactory(this.$ref.child('responses'));
+    protected responses: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\Column(type="datetime", name="created")
@@ -122,7 +110,7 @@ export class User extends BaseUser {
     protected photo: File;
 
     /** @ORM\Column(name="devices", type="simple_array", nullable=true) */
-    protected devices: Array<string> = [];
+    protected devices: Array<string>;
 
     /**
      * @ORM\ManyToMany(targetEntity="Group")
@@ -130,7 +118,7 @@ export class User extends BaseUser {
      *      joinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="$key")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="group_id", referencedColumnName="$key")})
      */
-    protected groups: Array<Group>;
+    protected groups: FirebaseListObservable<Array<number>>;
 
     /** @ORM\Column(name="properties", type="array", nullable=true) */
     protected properties: { [index: string]: any } = {};

@@ -1,9 +1,10 @@
-import { FirebaseObjectFactory, User, UserObjectFactory } from './User';
+import { User } from './User';
 import { Pack } from './Pack';
 import { DbIdObject } from './DbIdObject';
 import { Response } from './Response';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseObjectObservable } from 'angularfire2/database';
+import { ResponseListFactory, UserObjectFactory } from './Factories';
 
 /**
  * @ORM\Entity
@@ -18,14 +19,14 @@ export class UserPack extends DbIdObject<UserPack> {
      * @ORM\ManyToOne(targetEntity="User", inversedBy="userPacks", fetch="EXTRA_LAZY")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user_id: number;
+    protected user_id: string;
 
     /**
      * @ORM\Id
      * @ORM\ManyToOne(targetEntity="Pack", inversedBy="userPacks", fetch="EXTRA_LAZY")
      * @ORM\JoinColumn(name="pack_id", referencedColumnName="$key")
      */
-    protected pack: Pack;
+    protected pack_id: string;
 
     /** @ORM\Column(name="priority", type="decimal") */
     protected priority = 0.0;
@@ -95,7 +96,7 @@ export class UserPack extends DbIdObject<UserPack> {
          return !c.getDeleted();
          });
          const responses = this.getUser().getResponsesForPack(this.getPack());
-         const result = [];
+         const result;
          for (const c in cards) {
          if (!cards.hasOwnProperty(c)) {
          continue;

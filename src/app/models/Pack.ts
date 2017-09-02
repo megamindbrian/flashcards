@@ -11,7 +11,7 @@ import {
     FirebaseObjectObservable
 } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
+import { FirebaseListFactory } from '../core/database';
 
 /**
  * @ORM\Entity
@@ -24,7 +24,7 @@ export class Pack extends DbIdObject<Pack> {
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="packs")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="$key", nullable=true)
      */
-    protected group: FirebaseObjectObservable<Group> = FirebaseObjectFactory(this.$ref.child('group'), Group.prototype);
+    protected group_id: string;
 
     /**
      * @ORM\ManyToMany(targetEntity="Group")
@@ -32,18 +32,18 @@ export class Pack extends DbIdObject<Pack> {
      *      joinColumns={@ORM\JoinColumn(name="pack_id", referencedColumnName="$key")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="group_id", referencedColumnName="$key")})
      */
-    protected groups: FirebaseListObservable<Array<Group>>;
+    protected groups: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\ManyToMany(targetEntity="Bundle", mappedBy="packs", fetch="EXTRA_LAZY")
      */
-    protected bundles: Array<Bundle>;
+    protected bundles: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="packs")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key", nullable=true)
      */
-    protected user: FirebaseObjectObservable<User>;
+    protected user_id: string;
 
     /**
      * @ORM\OneToMany(targetEntity="UserPack", mappedBy="pack", fetch="EXTRA_LAZY")
@@ -52,7 +52,7 @@ export class Pack extends DbIdObject<Pack> {
     protected userPacks: FirebaseListObservable<UserPack>;
 
     /** @ORM\Column(name="properties", type="array", nullable=true) */
-    protected properties: { [index: string]: any } = [];
+    protected properties: { [index: string]: any };
 
     /** @ORM\Column(name="downloads", type="integer") */
     protected downloads = 0;
@@ -101,9 +101,7 @@ export class Pack extends DbIdObject<Pack> {
     /**
      * @ORM\OneToMany(targetEntity="Card", mappedBy="pack")
      */
-    protected cards: FirebaseListObservable<Array<Card>> = FirebaseListFactory<Card>(
-        this.$ref.child('cards'),
-        Group.prototype);
+    protected cards: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\Column(type="datetime", name="created")

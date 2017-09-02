@@ -1,5 +1,7 @@
 import { Group } from './Group';
 import { DbIdObject } from './DbIdObject';
+import { FirebaseListObservable } from 'angularfire2/database';
+import { Observable } from 'rxjs/Observable';
 export class BaseUser extends DbIdObject<BaseUser> {
     static ROLE_DEFAULT = 'ROLE_USER';
     static ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
@@ -74,12 +76,12 @@ export class BaseUser extends DbIdObject<BaseUser> {
     /**
      * @var Array<Group>
      */
-    protected groups: Array<Group>;
+    protected groups: FirebaseListObservable<Array<number>>;
 
     /**
      * @var array
      */
-    protected roles: Array<string> = [];
+    protected roles: Array<string>;
 
     /**
      * {@inheritdoc}
@@ -101,7 +103,7 @@ export class BaseUser extends DbIdObject<BaseUser> {
      * {@inheritdoc}
      */
     public eraseCredentials(): this {
-        delete this.plainPassword;
+        this.plainPassword = void 0;
         return this;
     }
 
@@ -373,8 +375,8 @@ export class BaseUser extends DbIdObject<BaseUser> {
     /**
      * {@inheritdoc}
      */
-    public getGroups(): Array<Group> {
-        return this.groups || (this.groups = []);
+    public getGroups(): Observable<Array<Group>> {
+        return this.groups || (this.groups);
     }
 
     /**

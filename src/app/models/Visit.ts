@@ -15,13 +15,13 @@ export class Visit extends DbIdObject<Visit> {
      * @ORM\ManyToOne(targetEntity="Session", inversedBy="visits")
      * @ORM\Column(type="string", name="session_id", length=64, nullable=true)
      */
-    protected session: Session;
+    protected session_id: string;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="visits")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key", nullable=true)
      */
-    protected user: User;
+    protected user_id: string;
 
     /**
      * @ORM\Column(type="string", length=256, name="path")

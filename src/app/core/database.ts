@@ -8,28 +8,24 @@ import { isNil } from 'angularfire2/database/utils';
 import * as firebase from 'firebase/app';
 
 function firebaseUnwrap<T extends object>(snapshot: DatabaseSnapshot,
-                                          constructor: (ref: firebase.database.Reference,
-                                                        exists: boolean,
-                                                        key: string) => T): T {
+                                          prototype: any): T {
     let unwrapped = !isNil(snapshot.val()) ? snapshot.val() : {$value: void 0};
     if ((/string|number|boolean/).test(typeof unwrapped)) {
         unwrapped = {
             $value: unwrapped
         };
     }
-    const result = constructor(snapshot.ref, snapshot.exists(), snapshot.ref.key) as T;
+    const result = new prototype.constructor(snapshot.ref, snapshot.exists(), snapshot.ref.key) as T;
     Object.assign(result, unwrapped);
     return result;
 }
 
 export function FirebaseObjectFactory<T extends object>(ref: firebase.database.Reference,
-                                                        constructor: (ref: firebase.database.Reference,
-                                                                      exists: boolean,
-                                                                      key: string) => T): FirebaseObjectObservable<T> {
+                                                        prototype: any): FirebaseObjectObservable<T> {
     // TODO: should be in the subscription zone instead
     return new FirebaseObjectObservable((obs: Observer<any>) => {
         const fn = ref.on('value', (snapshot: DatabaseSnapshot) => {
-            obs.next(firebaseUnwrap(snapshot, constructor));
+            obs.next(firebaseUnwrap(snapshot, prototype));
         }, (err: Error) => {
             if (err) {
                 obs.error(err);
@@ -42,9 +38,7 @@ export function FirebaseObjectFactory<T extends object>(ref: firebase.database.R
 }
 
 export function FirebaseListFactory<T extends object>(ref: firebase.database.Reference,
-                                                      constructor: (ref: firebase.database.Reference,
-                                                                    exists: boolean,
-                                                                    key: string) => T): FirebaseListObservable<Array<T>> {
+                                                      prototype: any): FirebaseListObservable<Array<T>> {
     const toKey = ((value: any) => value.$key);
 
     return new FirebaseListObservable<Array<T>>(ref, (obs: Observer<any>) => {
@@ -83,7 +77,7 @@ export function FirebaseListFactory<T extends object>(ref: firebase.database.Ref
         });
 
         const addFn = ref.on('child_added', (child: any, prevKey: string) => {
-            array = onChildAdded(array, firebaseUnwrap(child, constructor), toKey, prevKey);
+            array = onChildAdded(array, firebaseUnwrap(child, prototype), toKey, prevKey);
             if (hasLoaded) {
                 obs.next(array);
             } else if (child.key === lastLoadedKey) {
@@ -99,7 +93,7 @@ export function FirebaseListFactory<T extends object>(ref: firebase.database.Ref
         handles.push({event: 'child_added', handle: addFn});
 
         const remFn = ref.on('child_removed', (child: any) => {
-            array = onChildRemoved(array, firebaseUnwrap(child, constructor), toKey);
+            array = onChildRemoved(array, firebaseUnwrap(child, prototype), toKey);
             if (hasLoaded) {
                 obs.next(array);
             }
@@ -114,7 +108,7 @@ export function FirebaseListFactory<T extends object>(ref: firebase.database.Ref
         const chgFn = ref.on('child_changed', (child: any, prevKey: string) => {
             array = onChildChanged(
                 array,
-                firebaseUnwrap(child, constructor),
+                firebaseUnwrap(child, prototype),
                 toKey,
                 prevKey);
             if (hasLoaded) {

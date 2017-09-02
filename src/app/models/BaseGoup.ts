@@ -12,7 +12,7 @@ export class BaseGroup extends DbIdObject<BaseGroup> {
     /**
      * @var array
      */
-    protected roles: Array<string> = [];
+    protected roles: Array<string>;
 
     /**
      * {@inheritdoc}
