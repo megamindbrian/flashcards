@@ -1,6 +1,9 @@
 import { User } from './User';
 import { Session } from './Session';
 import { DbIdObject } from './DbIdObject';
+import { Observable } from 'rxjs/Observable';
+import { FirebaseObjectFactory } from '../core/database';
+
 /**
  * @ORM\Entity
  * @ORM\Table(name="visit",indexes={
@@ -172,10 +175,9 @@ export class Visit extends DbIdObject<Visit> {
      * @return Visit
      * @param session
      */
-    public setSession(session?: Session): this {
-        this.session = session;
-
-        return this;
+    public setSession(session?: Session): Observable<this> {
+        this.session_id = session.getKey();
+        return Observable.of(this.$ref.child('session_id').set(this.session_id)).map(() => this);
     }
 
     /**
@@ -183,8 +185,8 @@ export class Visit extends DbIdObject<Visit> {
      *
      * @return string
      */
-    public getSession(): Session {
-        return this.session;
+    public getSession(): Observable<Session> {
+        return FirebaseObjectFactory<Session>(this.$ref.root.child('session/' + this.session_id), Session);
     }
 
     /**
@@ -193,10 +195,9 @@ export class Visit extends DbIdObject<Visit> {
      * @return Visit
      * @param user
      */
-    public setUser(user?: User): this {
-        this.user = user;
-
-        return this;
+    public setUser(user?: User): Observable<this> {
+        this.user_id = user.getKey();
+        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
     }
 
     /**
@@ -204,8 +205,8 @@ export class Visit extends DbIdObject<Visit> {
      *
      * @return User
      */
-    public getUser(): User {
-        return this.user;
+    public getUser(): Observable<User> {
+        return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.user_id), User);
     }
 
     /**

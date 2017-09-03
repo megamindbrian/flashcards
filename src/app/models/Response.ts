@@ -1,7 +1,10 @@
 import { Card } from './Card';
 import { Answer } from './Answer';
 import { User } from './User';
+import { File } from './File';
 import { DbIdObject } from './DbIdObject';
+import { Observable } from 'rxjs/Observable';
+import { FirebaseObjectFactory } from '../core/database';
 /**
  * @ORM\Entity
  * @ORM\Table(name="response")
@@ -18,25 +21,25 @@ export class Response extends DbIdObject<Response> {
      * @ORM\ManyToOne(targetEntity="Card", inversedBy="responses")
      * @ORM\JoinColumn(name="card_id", referencedColumnName="$key", nullable=true)
      */
-    protected card: Card;
+    protected card_id: string;
 
     /**
      * @ORM\ManyToOne(targetEntity="Answer", inversedBy="responses")
      * @ORM\JoinColumn(name="answer_id", referencedColumnName="$key", nullable=true)
      */
-    protected answer: Answer;
+    protected answer_id: string;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="responses")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user: User;
+    protected user_id: string;
 
     /**
      * @ORM\OneToOne(targetEntity="File", inversedBy="response")
      * @ORM\JoinColumn(name="file_id", referencedColumnName="$key", nullable=true)
      */
-    protected file: File;
+    protected file_id: string;
 
     /**
      * @ORM\Column(type="text", name="value", nullable=true)
@@ -107,10 +110,9 @@ export class Response extends DbIdObject<Response> {
      * @return Response
      * @param answer
      */
-    public setAnswer(answer?: Answer): this {
-        this.answer = answer;
-
-        return this;
+    public setAnswer(answer?: Answer): Observable<this> {
+        this.answer_id = answer.getKey();
+        return Observable.of(this.$ref.child('answer_id').set(this.answer_id)).map(() => this);
     }
 
     /**
@@ -118,8 +120,8 @@ export class Response extends DbIdObject<Response> {
      *
      * @return Answer
      */
-    public getAnswer(): Answer {
-        return this.answer;
+    public getAnswer(): Observable<Answer> {
+        return FirebaseObjectFactory<Answer>(this.$ref.root.child('answer/' + this.answer_id), Answer);
     }
 
     /**
@@ -128,10 +130,9 @@ export class Response extends DbIdObject<Response> {
      * @return Response
      * @param user
      */
-    public setUser(user?: User): this {
-        this.user = user;
-
-        return this;
+    public setUser(user?: User): Observable<this> {
+        this.user_id = user.getKey();
+        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
     }
 
     /**
@@ -139,8 +140,8 @@ export class Response extends DbIdObject<Response> {
      *
      * @return User
      */
-    public getUser(): User {
-        return this.user;
+    public getUser(): Observable<User> {
+        return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.user_id), File);
     }
 
     /**
@@ -149,10 +150,9 @@ export class Response extends DbIdObject<Response> {
      * @return Response
      * @param file
      */
-    public setFile(file?: File): this {
-        this.file = file;
-
-        return this;
+    public setFile(file?: File): Observable<this> {
+        this.file_id = file.getKey();
+        return Observable.of(this.$ref.child('file_id').set(this.file_id)).map(() => this);
     }
 
     /**
@@ -160,8 +160,8 @@ export class Response extends DbIdObject<Response> {
      *
      * @return File
      */
-    public getFile(): File {
-        return this.file;
+    public getFile(): Observable<File> {
+        return FirebaseObjectFactory<File>(this.$ref.root.child('file/' + this.file_id), File);
     }
 
     /**
@@ -191,10 +191,9 @@ export class Response extends DbIdObject<Response> {
      * @return Response
      * @param card
      */
-    public setCard(card?: Card): this {
-        this.card = card;
-
-        return this;
+    public setCard(card?: Card): Observable<this> {
+        this.card_id = card.getKey();
+        return Observable.of(this.$ref.child('card_id').set(this.card_id)).map(() => this);
     }
 
     /**
@@ -202,7 +201,7 @@ export class Response extends DbIdObject<Response> {
      *
      * @return Card
      */
-    public getCard(): Card {
-        return this.card;
+    public getCard(): Observable<Card> {
+        return FirebaseObjectFactory<Card>(this.$ref.root.child('card/' + this.card_id), Card);
     }
 }

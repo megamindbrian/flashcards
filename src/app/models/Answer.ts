@@ -1,9 +1,9 @@
 import { Card } from './Card';
 import { DbIdObject } from './DbIdObject';
-import { FirebaseListFactory, FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2/database';
-import { CardObjectFactory, ResponseListFactory, ResponseObjectFactory } from './Factories';
+import { FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
 import { Response } from './Response';
+import { FirebaseObjectFactory } from '../core/database';
 
 /**
  * @ORM\Entity
@@ -181,12 +181,10 @@ export class Answer extends DbIdObject<Answer> {
      * Add responses
      *
      * @return Answer
-     * @param responses
+     * @param response
      */
-    public addResponse(responses: Response): Observable<this> {
-        return ResponseListFactory(this.$ref.child('responses'))
-            .flatMap(r => r.push(responses.getKey()))
-            .map(() => this);
+    public addResponse(response: Response): Observable<this> {
+        return this.add('responses', response);
     }
 
     /**
@@ -194,10 +192,8 @@ export class Answer extends DbIdObject<Answer> {
      *
      * @param response
      */
-    public removeResponse(response: Response): Observable<Array<Response>> {
-        return ResponseListFactory(this.$ref.child('responses'))
-            .flatMap(r => this.$ref.child('responses/' + r.indexOf(response.getKey())).remove())
-            .flatMap(() => this.getResponses());
+    public removeResponse(response: Response): Observable<this> {
+        return this.remove('responses', response);
     }
 
     /**
@@ -206,11 +202,7 @@ export class Answer extends DbIdObject<Answer> {
      * @return Array<Response>
      */
     public getResponses(): Observable<Array<Response>> {
-        return FirebaseListFactory(this.$ref.child('responses'))
-            .flatMap(r => Observable.merge(r
-                .map((rid: string) => ResponseObjectFactory(this.$ref.root.child('response/' + rid)))))
-            .toArray()
-            .map(r => r.map(response => response as Response));
+        return this.list('responses', ref => FirebaseObjectFactory<Response>(ref, Response));
     }
 
     /**
@@ -251,7 +243,7 @@ export class Answer extends DbIdObject<Answer> {
      * @return Card
      */
     public getCard(): FirebaseObjectObservable<Card> {
-        return CardObjectFactory(this.$ref.root.child('card/' + this.card_id));
+        return FirebaseObjectFactory<Card>(this.$ref.root.child('card/' + this.card_id), Card);
     }
 
     /**

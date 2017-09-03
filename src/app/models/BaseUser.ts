@@ -1,7 +1,7 @@
 import { Group } from './Group';
 import { DbIdObject } from './DbIdObject';
-import { FirebaseListObservable } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
+import { FirebaseObjectFactory } from '../core/database';
 export class BaseUser extends DbIdObject<BaseUser> {
     static ROLE_DEFAULT = 'ROLE_USER';
     static ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
@@ -76,7 +76,6 @@ export class BaseUser extends DbIdObject<BaseUser> {
     /**
      * @var Array<Group>
      */
-    protected groups: FirebaseListObservable<Array<number>>;
 
     /**
      * @var array
@@ -175,19 +174,20 @@ export class BaseUser extends DbIdObject<BaseUser> {
     /**
      * {@inheritdoc}
      */
-    public getRoles(): Array<string> {
-        const roles = this.roles.concat(...this.getGroups().map(g => g.getRoles()))
-            .concat([ BaseUser.ROLE_DEFAULT ]);
-        return roles.filter((elem: string, pos: number, arr: Array<string>) => {
-            return arr.indexOf(elem) === pos;
-        });
+    public getRoles(): Observable<Array<string>> {
+        return this.getGroups()
+            .map(groups => this.roles.concat(...groups.map(g => g.getRoles()))
+                .filter((elem: string, pos: number, arr: Array<string>) => {
+                    return arr.indexOf(elem) === pos;
+                }));
     }
 
     /**
      * {@inheritdoc}
      */
-    public hasRole(role: string): boolean {
-        return this.getRoles().indexOf(role.toUpperCase()) > -1;
+    public hasRole(role: string): Observable<boolean> {
+        return this.getRoles()
+            .map(roles => roles.indexOf(role.toUpperCase()) > -1);
     }
 
     /**
@@ -218,7 +218,7 @@ export class BaseUser extends DbIdObject<BaseUser> {
     /**
      * {@inheritdoc}
      */
-    public isSuperAdmin(): boolean {
+    public isSuperAdmin(): Observable<boolean> {
         return this.hasRole(BaseUser.ROLE_SUPER_ADMIN);
     }
 
@@ -376,44 +376,35 @@ export class BaseUser extends DbIdObject<BaseUser> {
      * {@inheritdoc}
      */
     public getGroups(): Observable<Array<Group>> {
-        return this.groups || (this.groups);
+        return this.list('groups', ref => FirebaseObjectFactory<Group>(ref, Group));
     }
 
     /**
      * {@inheritdoc}
      */
-    public getGroupNames(): Array<string> {
-        return this.getGroups().map(g => g.getName());
+    public getGroupNames(): Observable<Array<string>> {
+        return this.getGroups().map(g => g.map(group => group.getName()));
     }
 
     /**
      * {@inheritdoc}
      */
-    public hasGroup(name: string): boolean {
-        return this.getGroupNames().indexOf(name) > -1;
+    public hasGroup(name: string): Observable<boolean> {
+        return this.getGroupNames().map(groups => groups.indexOf(name) > -1);
     }
 
     /**
      * {@inheritdoc}
      */
-    public addGroup(group: Group): this {
-        if (this.getGroups().indexOf(group) === -1) {
-            this.getGroups().push(group);
-        }
-
-        return this;
+    public addGroup(group: Group): Observable<this> {
+        return this.add('group', group);
     }
 
     /**
      * {@inheritdoc}
      */
-    public removeGroup(group: Group): this {
-        const key = this.getGroups().indexOf(group);
-        if (key > -1) {
-            this.$ref.child('groups/' + key).remove();
-        }
-
-        return this;
+    public removeGroup(group: Group): Observable<this> {
+        return this.remove('groups', group);
     }
 
     /**

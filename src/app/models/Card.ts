@@ -1,10 +1,9 @@
 import { Answer } from './Answer';
 import { Pack } from './Pack';
-import { User } from './User';
 import { Response } from './Response';
 import { DbIdObject } from './DbIdObject';
-import { FirebaseListFactory, FirebaseListObservable } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
+import { FirebaseObjectFactory } from '../core/database';
 
 /**
  * @ORM\Entity
@@ -20,7 +19,7 @@ export class Card extends DbIdObject<Card> {
      * @ORM\ManyToOne(targetEntity="Pack", inversedBy="cards")
      * @ORM\JoinColumn(name="pack_id", referencedColumnName="$key")
      */
-    protected pack: Pack;
+    protected pack_id: string;
 
     /**
      * @ORM\Column(type="datetime", name="created")
@@ -61,24 +60,17 @@ export class Card extends DbIdObject<Card> {
      * @ORM\OneToMany(targetEntity="Response", mappedBy="card", fetch="EXTRA_LAZY", indexBy="user")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected responses: FirebaseListObservable<Response>;
 
     /**
      * @ORM\OneToMany(targetEntity="Answer", mappedBy="card")
      * @ORM\OrderBy({"created" = "DESC"})
      * @var Answer[] answers
      */
-    protected answers: FirebaseListObservable<Answer>;
 
     /**
      * @ORM\Column(type="boolean", name="deleted")
      */
     protected deleted = false;
-
-    public getResponsesForUser(user: User): Observable<Response> {
-        return FirebaseListFactory(this.$ref.child('responses'))
-            .map(r => r.filter((response: Response) => response.getUser() === user));
-    }
 
     public getIndex(): Observable<number> {
         return Observable.of(1);
@@ -93,31 +85,32 @@ export class Card extends DbIdObject<Card> {
     public getCorrect(): Observable<Answer> {
         return this.getAnswers().map(a => a.filter((answer: Answer) => {
             return answer.getCorrect() === true && !answer.getDeleted();
-        }).first());
+        })[ 0 ]);
     }
 
     /**
      * @param correct
      */
     public setCorrect(correct?: Answer): Observable<this> {
-        return this.answers.map((a: Array<Answer>) => {
-            return a.map(answer => {
-                if (answer.getValue() === correct.getValue()) {
-                    answer.setCorrect(true);
-                    answer.setCard(this);
-                    return Observable.of(answer);
-                } else {
-                    answer.setCorrect(false);
-                    return Observable.of();
-                }
-            }).map(answer => {
-                if (typeof answer !== 'undefined') {
-                    return this.$ref.child('answers').push(correct);
-                } else {
-                    return Observable.of();
-                }
-            });
-        }).map(() => this);
+        return this.list('answers', ref => FirebaseObjectFactory<Answer>(ref, Answer))
+            .map((a: Array<Answer>) => {
+                return a.map(answer => {
+                    if (answer.getValue() === correct.getValue()) {
+                        answer.setCorrect(true);
+                        answer.setCard(this);
+                        return Observable.of(answer);
+                    } else {
+                        answer.setCorrect(false);
+                        return Observable.of();
+                    }
+                }).map(answer => {
+                    if (typeof answer !== 'undefined') {
+                        return this.$ref.child('answers').push(correct);
+                    } else {
+                        return Observable.of();
+                    }
+                });
+            }).map(() => this);
     }
 
     public setUpload(newUrl: string): this {
@@ -301,10 +294,9 @@ export class Card extends DbIdObject<Card> {
      * @return Card
      * @param pack
      */
-    public setPack(pack?: Pack): this {
-        this.pack = pack;
-
-        return this;
+    public setPack(pack?: Pack): Observable<this> {
+        this.pack_id = pack.getKey();
+        return Observable.of(this.$ref.child('pack_id').set(this.pack_id)).map(() => this);
     }
 
     /**
@@ -312,20 +304,18 @@ export class Card extends DbIdObject<Card> {
      *
      * @return Pack
      */
-    public getPack(): Pack {
-        return this.pack;
+    public getPack(): Observable<Pack> {
+        return FirebaseObjectFactory<Pack>(this.$ref.root.child('pack/' + this.pack_id), Pack);
     }
 
     /**
      * Add responses
      *
      * @return Card
-     * @param responses
+     * @param response
      */
-    public addResponse(responses: Response): this {
-        this.responses.push(responses);
-
-        return this;
+    public addResponse(response: Response): Observable<this> {
+        return this.add('responses', response);
     }
 
     /**
@@ -333,15 +323,8 @@ export class Card extends DbIdObject<Card> {
      *
      * @param response
      */
-    public removeResponse(response: Response): Observable<Response> {
-        return this.responses.flatMap((r: Array<Response>) => {
-            const key = r.indexOf(response);
-            if (key > -1) {
-                return this.$ref.child('responses/' + key).remove();
-            } else {
-                return Promise.resolve();
-            }
-        }).flatMap(() => this.responses);
+    public removeResponse(response: Response): Observable<this> {
+        return this.remove('responses', response);
     }
 
     /**
@@ -349,25 +332,18 @@ export class Card extends DbIdObject<Card> {
      *
      * @return Array<Response>
      */
-    public getResponses(): FirebaseListObservable<Response> {
-        return this.responses;
+    public getResponses(): Observable<Array<Response>> {
+        return this.list('responses', ref => FirebaseObjectFactory<Response>(ref, Response));
     }
 
     /**
      * Add answers
      *
      * @return Card
-     * @param answers
+     * @param answer
      */
-    public addAnswer(answers: Answer): Observable<this> {
-        return this.answers.map((a: Array<Answer>) => {
-            if (a.filter(answer => answer.getValue() === answers.getValue()).length === 0) {
-                return this.answers.push(answers);
-            }
-            return Promise.resolve();
-        })
-            .map(a => answers.setCard(this))
-            .map(() => this);
+    public addAnswer(answer: Answer): Observable<this> {
+        return this.add('answers', answer);
     }
 
     /**
@@ -375,20 +351,16 @@ export class Card extends DbIdObject<Card> {
      *
      * @param answer
      */
-    public removeAnswer(answer: Answer): Observable<Answer> {
-        return this.responses.flatMap(r => {
-            if (answer.getResponses().length > 0) {
-                // TODO: remove this promise.resolve
-                return Promise.resolve(answer.setDeleted(true));
-            } else {
-                const key = r.indexOf(answer);
-                if (key > -1) {
-                    return this.$ref.child('answer/' + key).remove();
+    public removeAnswer(answer: Answer): Observable<this> {
+        return answer.getResponses()
+            .flatMap(r => {
+                if (r.length > 0) {
+                    this.setDeleted(true);
+                    return Observable.of(this);
                 } else {
-                    return Promise.resolve([]);
+                    return this.remove('answers', answer);
                 }
-            }
-        }).flatMap(() => this.answers);
+            });
     }
 
     /**
@@ -396,8 +368,8 @@ export class Card extends DbIdObject<Card> {
      *
      * @return Array<Answer>
      */
-    public getAnswers(): FirebaseListObservable<Answer> {
-        return this.answers;
+    public getAnswers(): Observable<Array<Answer>> {
+        return this.list('answers', ref => FirebaseObjectFactory<Answer>(ref, Answer));
     }
 
     /**

@@ -8,16 +8,24 @@ import { isNil } from 'angularfire2/database/utils';
 import * as firebase from 'firebase/app';
 
 function firebaseUnwrap<T extends object>(snapshot: DatabaseSnapshot,
-                                          prototype: any): T {
+                                          type: any): T {
     let unwrapped = !isNil(snapshot.val()) ? snapshot.val() : {$value: void 0};
     if ((/string|number|boolean/).test(typeof unwrapped)) {
         unwrapped = {
             $value: unwrapped
         };
     }
-    const result = new prototype.constructor(snapshot.ref, snapshot.exists(), snapshot.ref.key) as T;
-    Object.assign(result, unwrapped);
-    return result;
+    const prototype = typeof type.constructor !== 'undefined' ? type : Object.getPrototypeOf(type).constructor;
+    try {
+        const result = new prototype(
+            snapshot.ref,
+            snapshot.exists(),
+            snapshot.ref.key) as T;
+        Object.assign(result, unwrapped);
+        return result;
+    } catch (e) {
+        throw e;
+    }
 }
 
 export function FirebaseObjectFactory<T extends object>(ref: firebase.database.Reference,

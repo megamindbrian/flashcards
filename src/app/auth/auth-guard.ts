@@ -52,9 +52,10 @@ export class AuthGuard implements CanActivate, CanActivateChild {
     canActivate(route: ActivatedRouteSnapshot,
                 state: RouterStateSnapshot): Observable<boolean> {
         const roles = (route.data[ 'roles' ] || route.parent.data[ 'roles' ]) as Array<string>;
-        return this.subj.map(() => this.user
-            ? [ 'user' ].concat(this.user.getRoles() || [])
-            : [ 'anonymous' ])
+        return this.subj.flatMap(() => this.user.getRoles())
+            .map(r => this.user
+                ? [ 'user' ].concat(r || [])
+                : [ 'anonymous' ])
             .map((result: Array<string>) => typeof roles === 'undefined' || result
                 .filter((r: string) => roles.indexOf(r) !== -1).length > 0);
     }

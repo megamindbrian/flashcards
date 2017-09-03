@@ -3,9 +3,9 @@ import { Pack } from './Pack';
 import { File } from './File';
 import { Payment } from './Payment';
 import { DbIdObject } from './DbIdObject';
-import { FirebaseListFactory, FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2/database';
+import { FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
-import { GroupObjectFactory, PackListFactory, ResponseObjectFactory } from './Factories';
+import { FirebaseObjectFactory } from '../core/database';
 
 /**
  * @ORM\Entity
@@ -89,8 +89,7 @@ export class Bundle extends DbIdObject<Bundle> {
 
     public getCardCount(): Observable<number> {
         return this.getPacks()
-            .flatMap(p => p.filter(pack => !pack.getDeleted()))
-            .map(p => p.length);
+            .map(p => p.filter(pack => !pack.getDeleted()).length);
     }
 
     public getLogo(): Observable<File> {
@@ -301,7 +300,7 @@ export class Bundle extends DbIdObject<Bundle> {
      * @return Group
      */
     public getGroup(): FirebaseObjectObservable<Group> {
-        return GroupObjectFactory(this.$ref.root.child('card/' + this.group_id));
+        return FirebaseObjectFactory<Group>(this.$ref.root.child('card/' + this.group_id), Group);
     }
 
     /**
@@ -337,12 +336,10 @@ export class Bundle extends DbIdObject<Bundle> {
      * Add payments
      *
      * @return Bundle
-     * @param payments
+     * @param payment
      */
-    public addPayment(payments: Payment): this {
-        this.payments[ this.payments.length ] = payments;
-
-        return this;
+    public addPayment(payment: Payment): Observable<this> {
+        return this.add('payments', payment);
     }
 
     /**
@@ -350,9 +347,8 @@ export class Bundle extends DbIdObject<Bundle> {
      *
      * @param payments
      */
-    public removePayment(payments: Payment): Array<Payment> {
-        this.$ref.child('payments/' + this.payments.indexOf(payments)).remove();
-        return this.payments;
+    public removePayment(payments: Payment): Observable<this> {
+        return this.remove('payments', payments);
     }
 
     /**
@@ -360,8 +356,8 @@ export class Bundle extends DbIdObject<Bundle> {
      *
      * @return Array<Payment>
      */
-    public getPayments(): Array<Payment> {
-        return this.payments;
+    public getPayments(): Observable<Array<Payment>> {
+        return this.list('payments', ref => FirebaseObjectFactory<Payment>(ref, Payment));
     }
 
     /**
@@ -372,9 +368,7 @@ export class Bundle extends DbIdObject<Bundle> {
      * @param pack
      */
     public addPack(pack: Pack): Observable<this> {
-        return PackListFactory(this.$ref.child('packs'))
-            .flatMap(r => r.push(pack.getKey()))
-            .map(() => this);
+        return this.add('packs', pack);
     }
 
     /**
@@ -382,10 +376,8 @@ export class Bundle extends DbIdObject<Bundle> {
      *
      * @param pack
      */
-    public removePack(pack: Pack): Observable<Pack> {
-        return PackListFactory(this.$ref.child('packs'))
-            .flatMap(r => this.$ref.child('packs/' + r.indexOf(pack.getKey())).remove())
-            .flatMap(() => this.getPacks());
+    public removePack(pack: Pack): Observable<this> {
+        return this.remove('packs', pack);
     }
 
     /**
@@ -394,11 +386,7 @@ export class Bundle extends DbIdObject<Bundle> {
      * @return Array<Pack>
      */
     public getPacks(): Observable<Array<Pack>> {
-        return FirebaseListFactory(this.$ref.child('responses'))
-            .flatMap(r => Observable.merge(r
-                .map((rid: string) => ResponseObjectFactory(this.$ref.root.child('response/' + rid)))))
-            .toArray()
-            .map(r => r.map(response => response as Response));
+        return this.list('packs', ref => FirebaseObjectFactory<Pack>(ref, Pack));
     }
 
     /**

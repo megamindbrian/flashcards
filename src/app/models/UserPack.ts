@@ -3,8 +3,7 @@ import { Pack } from './Pack';
 import { DbIdObject } from './DbIdObject';
 import { Response } from './Response';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseObjectObservable } from 'angularfire2/database';
-import { ResponseListFactory, UserObjectFactory } from './Factories';
+import { FirebaseObjectFactory } from '../core/database';
 
 /**
  * @ORM\Entity
@@ -62,26 +61,28 @@ export class UserPack extends DbIdObject<UserPack> {
      */
     public getResponses(correct = 0): Observable<Array<Response>> {
         const responses: Array<Response> = [];
-        return this.getUser()
-            .flatMap(user => user.getResponses().map((userResponses: Array<Response>) => {
-                const rids = [];
-                correct = 0;
-                for (const r in userResponses) {
-                    if (!userResponses.hasOwnProperty(r)) {
-                        continue;
-                    }
-                    /** @var Response r */
-                    if (userResponses[ r ].getCard().getPack().getKey() === this.getPack().getKey()
-                        && rids.indexOf(userResponses[ r ].getCard().getKey()) === -1) {
-                        rids[ rids.length ] = userResponses[ r ].getCard().getKey();
-                        responses[ responses.length ] = userResponses[ r ];
-                        if (userResponses[ r ].getCorrect()) {
-                            correct++;
-                        }
-                    }
-                }
-            }))
-            .map(() => responses);
+        return Observable.of(responses);
+        /*
+         return this.getUser()
+         .flatMap(user => user.getResponses().map((userResponses: Array<Response>) => {
+         const rids = [];
+         correct = 0;
+         for (const r in userResponses) {
+         if (!userResponses.hasOwnProperty(r)) {
+         continue;
+         }
+         if (userResponses[ r ].getCard().getPack().getKey() === this.getPack().getKey()
+         && rids.indexOf(userResponses[ r ].getCard().getKey()) === -1) {
+         rids[ rids.length ] = userResponses[ r ].getCard().getKey();
+         responses[ responses.length ] = userResponses[ r ];
+         if (userResponses[ r ].getCorrect()) {
+         correct++;
+         }
+         }
+         }
+         }))
+         .map(() => responses);
+         */
     }
 
     public getRetention(refresh = false): Array<any> {
@@ -286,9 +287,8 @@ export class UserPack extends DbIdObject<UserPack> {
      * @param user
      */
     public setUser(user: User): Observable<this> {
-        return UserObjectFactory(this.$ref.child('user_id'))
-            .map(u => this.$ref.child('user_id').set(user.getKey()))
-            .map(() => this);
+        this.user_id = typeof user !== 'undefined' ? user.getKey() : void 0;
+        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
     }
 
     /**
@@ -296,8 +296,8 @@ export class UserPack extends DbIdObject<UserPack> {
      *
      * @return User
      */
-    public getUser(): FirebaseObjectObservable<User> {
-        return UserObjectFactory(this.$ref.root.child('ss_user/' + this.user_id));
+    public getUser(): Observable<User> {
+        return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.user_id), User);
     }
 
     /**
@@ -306,10 +306,9 @@ export class UserPack extends DbIdObject<UserPack> {
      * @return UserPack
      * @param pack
      */
-    public setPack(pack: Pack): this {
-        this.pack = pack;
-
-        return this;
+    public setPack(pack: Pack): Observable<this> {
+        this.pack_id = pack.getKey();
+        return Observable.of(this.$ref.child('pack_id').set(this.pack_id)).map(() => this);
     }
 
     /**
@@ -317,8 +316,8 @@ export class UserPack extends DbIdObject<UserPack> {
      *
      * @return Pack
      */
-    public getPack(): Pack {
-        return this.pack;
+    public getPack(): Observable<Pack> {
+        return FirebaseObjectFactory<Pack>(this.$ref.root.child('pack/' + this.pack_id), Pack);
     }
 
     /**
@@ -339,8 +338,9 @@ export class UserPack extends DbIdObject<UserPack> {
      *
      * @return boolean
      */
-    public getRemoved(): boolean {
-        return this.getPack().getStatus() === 'DELETED' ? true : this.removed;
+    public getRemoved(): Observable<boolean> {
+        return this.getPack()
+            .map(p => p.getStatus() === 'DELETED' || this.removed);
     }
 
     /**

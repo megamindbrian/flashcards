@@ -2,6 +2,8 @@ import { Pack } from './Pack';
 import { User } from './User';
 import { Group } from './Group';
 import { DbIdObject } from './DbIdObject';
+import { Observable } from 'rxjs/Observable';
+import { FirebaseObjectFactory } from '../core/database';
 /**
  * @ORM\Entity
  * @ORM\Table(name="invite")
@@ -13,25 +15,25 @@ export class Invite extends DbIdObject<Invite> {
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="invites")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="$key", nullable=true)
      */
-    protected group: Group;
+    protected group_id: string;
 
     /**
      * @ORM\ManyToOne(targetEntity="Pack", inversedBy="invites")
      * @ORM\JoinColumn(name="pack_id", referencedColumnName="$key", nullable=true)
      */
-    protected pack: Pack;
+    protected pack_id: string;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="invites")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user: User;
+    protected user_id: string;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="invitees")
      * @ORM\JoinColumn(name="invitee_id", referencedColumnName="$key", nullable=true)
      */
-    protected invitee: User;
+    protected invitee_id: string;
 
     /**
      * @ORM\Column(type="string", length=256, name="firstName")
@@ -232,10 +234,9 @@ export class Invite extends DbIdObject<Invite> {
      * @return Invite
      * @param group
      */
-    public setGroup(group?: Group): this {
-        this.group = group;
-
-        return this;
+    public setGroup(group?: Group): Observable<this> {
+        this.group_id = group.getKey();
+        return Observable.of(this.$ref.child('group_id').set(this.group_id)).map(() => this);
     }
 
     /**
@@ -243,8 +244,8 @@ export class Invite extends DbIdObject<Invite> {
      *
      * @return Group
      */
-    public getGroup(): Group {
-        return this.group;
+    public getGroup(): Observable<Group> {
+        return FirebaseObjectFactory<Group>(this.$ref.root.child('group/' + this.group_id), Group);
     }
 
     /**
@@ -253,10 +254,9 @@ export class Invite extends DbIdObject<Invite> {
      * @return Invite
      * @param user
      */
-    public setUser(user?: User): this {
-        this.user = user;
-
-        return this;
+    public setUser(user?: User): Observable<this> {
+        this.user_id = user.getKey();
+        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
     }
 
     /**
@@ -264,8 +264,8 @@ export class Invite extends DbIdObject<Invite> {
      *
      * @return User
      */
-    public getUser(): User {
-        return this.user;
+    public getUser(): Observable<User> {
+        return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.user_id), User);
     }
 
     /**
@@ -274,10 +274,9 @@ export class Invite extends DbIdObject<Invite> {
      * @return Invite
      * @param pack
      */
-    public setPack(pack?: Pack): this {
-        this.pack = pack;
-
-        return this;
+    public setPack(pack?: Pack): Observable<this> {
+        this.pack_id = pack.getKey();
+        return Observable.of(this.$ref.child('pack_id').set(this.pack_id)).map(() => this);
     }
 
     /**
@@ -285,8 +284,8 @@ export class Invite extends DbIdObject<Invite> {
      *
      * @return Pack
      */
-    public getPack(): Pack {
-        return this.pack;
+    public getPack(): Observable<Pack> {
+        return FirebaseObjectFactory<Pack>(this.$ref.root.child('pack/' + this.pack_id), Pack);
     }
 
     /**
@@ -295,10 +294,9 @@ export class Invite extends DbIdObject<Invite> {
      * @return Invite
      * @param invitee
      */
-    public setInvitee(invitee?: User): this {
-        this.invitee = invitee;
-
-        return this;
+    public setInvitee(invitee?: User): Observable<this> {
+        this.invitee_id = invitee.getKey();
+        return Observable.of(this.$ref.child('invitee_id').set(this.invitee_id)).map(() => this);
     }
 
     /**
@@ -306,8 +304,8 @@ export class Invite extends DbIdObject<Invite> {
      *
      * @return User
      */
-    public getInvitee(): User {
-        return this.invitee;
+    public getInvitee(): Observable<User> {
+        return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.invitee_id), User);
     }
 
     /**
