@@ -1,6 +1,4 @@
 ﻿import { AfterViewInit, ChangeDetectorRef, Component } from '@angular/core';
-import { AuthService } from '../../auth/auth.service';
-
 
 @Component({
     selector: 'bc-account-links',
@@ -10,15 +8,9 @@ export class AccountLinksComponent implements AfterViewInit {
 
     public loggedIn: boolean;
 
-    constructor(public authService: AuthService,
-                public ref: ChangeDetectorRef) {
-        this.authService.isLoggedIn();
+    constructor(public ref: ChangeDetectorRef) {
     }
 
-    ngAfterViewInit() {
-        this.authService.loggedIn.subscribe((v) => {
-            this.loggedIn = v;
-            this.ref.detectChanges();
-        });
+    ngAfterViewInit(): void {
     }
 }

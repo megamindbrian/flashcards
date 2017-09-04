@@ -2,6 +2,7 @@ import { ElementRef, Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { NavigationEnd, Router } from '@angular/router';
+import 'rxjs/add/operator/filter';
 
 @Injectable()
 export class LayoutService {

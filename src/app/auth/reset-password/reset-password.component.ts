@@ -1,6 +1,5 @@
 ﻿import { Component } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AuthService } from '../auth.service';
 
 @Component({
     selector: 'bc-reset',
@@ -16,7 +15,6 @@ export class ResetPasswordComponent {
     error = '';
 
     constructor(public router: Router,
-                public auth: AuthService,
                 public route: ActivatedRoute) {
         this.route.params.subscribe(params => {
             this.email = params[ 'email' ];
@@ -27,15 +25,6 @@ export class ResetPasswordComponent {
     }
 
     onNext() {
-        this.auth.passwordReset(this.email, this.code, this.password)
-            .subscribe(response => {
-                if (response.ok) {
-                    this.router.navigate([ '/' ]);
-                } else {
-                    this.error = response.statusText;
-                }
-            });
     }
 
 }
-

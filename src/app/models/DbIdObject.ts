@@ -33,9 +33,8 @@ export abstract class DbIdObject<T> {
         const list = FirebaseListFactory(this.$ref.child(path));
         return list
             .flatMap((r: Array<string>) =>
-                Observable.merge(r.map((rid: string) =>
+                Observable.zip(...r.map((rid: string) =>
                     factory(list.$ref.ref.root.child(path.replace(/s$/i, '')).child(rid)))))
-            .toArray()
             .map((r: Array<any>) => r.map((result: any) => result as R));
     }
 }

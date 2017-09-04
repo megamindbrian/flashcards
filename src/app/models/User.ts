@@ -9,6 +9,7 @@ import { Response } from './Response';
 import { File } from './File';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
+import 'rxjs/add/operator/combineLatest';
 
 /**
  * @ORM\Entity
@@ -320,7 +321,7 @@ export class User extends BaseUser {
      * @return Array<Payment>
      */
     public getPayments(): Observable<Array<Payment>> {
-        return this.list('payments', ref => FirebaseObjectFactory(ref, Payment));
+        return this.list('payments', ref => FirebaseObjectFactory<Payment>(ref, Payment));
     }
 
     /**
@@ -445,7 +446,7 @@ export class User extends BaseUser {
      * @return Array<Invite>
      */
     public getInvites(): Observable<Array<Invite>> {
-        return this.list('invites', ref => FirebaseObjectFactory(ref, Invite));
+        return this.list('invites', ref => FirebaseObjectFactory<Invite>(ref, Invite));
     }
 
     /**
@@ -473,7 +474,7 @@ export class User extends BaseUser {
      * @return Array<Invite>
      */
     public getInvitees(): Observable<Array<Invite>> {
-        return this.list('invitees', ref => FirebaseObjectFactory(ref, Invite));
+        return this.list('invitees', ref => FirebaseObjectFactory<Invite>(ref, Invite));
     }
 
     /**
@@ -532,7 +533,7 @@ export class User extends BaseUser {
      * @return Array<Pack>
      */
     public getAuthored(): Observable<Array<Pack>> {
-        return this.list('authored', ref => FirebaseObjectFactory(ref, Pack));
+        return this.list('authored', ref => FirebaseObjectFactory<Pack>(ref, Pack));
     }
 
     /**

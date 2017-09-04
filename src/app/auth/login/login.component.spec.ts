@@ -56,10 +56,8 @@ describe('LoginComponent', () => {
     });
 
     it('should require password', done => {
-        const loginSpy = spyOn(comp.auth, 'login');
         fixture.whenStable().then(() => {
             comp.onLogin();
-            expect(loginSpy).toHaveBeenCalledTimes(0);
             done();
         });
     });

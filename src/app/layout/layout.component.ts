@@ -2,7 +2,8 @@
 import { NavigationEnd, Router } from '@angular/router';
 import { LayoutService } from './layout.service';
 import { Observable } from 'rxjs/Observable';
-
+import 'rxjs/add/operator/debounce';
+import 'rxjs/add/observable/timer';
 
 @Component({
     selector: 'bc-layout',

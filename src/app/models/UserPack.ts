@@ -5,6 +5,8 @@ import { Response } from './Response';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
 import { Card } from './Card';
+import 'rxjs/add/operator/combineLatest';
+import 'rxjs/add/observable/zip';
 
 export class RetentionValue {
     days: number;
@@ -93,8 +95,8 @@ export class UserPack extends DbIdObject<UserPack> {
             // timeline ----------------------->
             //             |correct |correct |correct
             while (reducer.i < UserPack.INTERVALS.length && (typeof reducer.last === 'undefined'
-            || UserPack.normalizeTimeAt3(current.getCreated())
-            >= UserPack.normalizeTimeAt3(reducer.last, UserPack.INTERVALS[ reducer.i ]))) {
+                || UserPack.normalizeTimeAt3(current.getCreated())
+                >= UserPack.normalizeTimeAt3(reducer.last, UserPack.INTERVALS[ reducer.i ]))) {
                 reducer.last = current.getCreated();
                 reducer.i += 1;
             }
@@ -402,7 +404,7 @@ export class UserPack extends DbIdObject<UserPack> {
             .flatMap(is => is
                 ? Observable.of(true)
                 : this.getPack().map((p: Pack) => typeof p === 'undefined'
-                || p === null || p.getStatus() === 'DELETED'));
+                    || p === null || p.getStatus() === 'DELETED'));
     }
 
     /**

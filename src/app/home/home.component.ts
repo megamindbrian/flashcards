@@ -6,6 +6,7 @@ import { FirebaseObjectFactory } from '../core/database';
 import { RetentionValue, UserPack } from '../models/UserPack';
 import { Subscription } from 'rxjs/Subscription';
 import { Observable } from 'rxjs/Observable';
+import 'rxjs/observable/zip';
 
 @Component({
     selector: 'bc-home',

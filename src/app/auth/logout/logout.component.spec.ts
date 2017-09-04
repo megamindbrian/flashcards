@@ -29,13 +29,9 @@ describe('LogoutComponent', () => {
     });
 
     it('should logout user and clear token', () => {
-        const authSpy = spyOn(comp.authService, 'logout');
         const navSpy = spyOn(comp.router, 'navigate');
         comp.ngOnInit();
-        expect(authSpy).toHaveBeenCalledTimes(1);
         expect(navSpy).toHaveBeenCalled();
-        expect(comp.authService.isLoggedIn());
     });
 
 });
-

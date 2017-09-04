@@ -11,11 +11,9 @@ import {
     MdToolbarModule, MdTooltipModule, OverlayModule,
     PlatformModule
 } from '@angular/material';
-import { AuthService } from '../auth/auth.service';
 import { AuthGuard } from '../auth/auth-guard';
 import { RegisterFormComponent } from '../auth/register-form/register-form.component';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { AuthManager } from '../auth/auth.manager';
 import { DialogGuard } from './dialog-guard';
 import { JwtHelper } from 'angular2-jwt';
 import { LogService } from './log/log.service';
@@ -79,9 +77,7 @@ export class SharedModule {
             ngModule: SharedModule,
             providers: [
                 DialogGuard,
-                AuthService,
                 AuthGuard,
-                AuthManager,
                 JwtHelper,
                 LogService,
                 HttpClient

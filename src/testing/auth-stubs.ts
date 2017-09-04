@@ -2,7 +2,6 @@ import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import { Injectable } from '@angular/core';
 import 'rxjs/add/observable/of';
-import { AuthManager } from '../app/auth/auth.manager';
 import { User } from '../app/models/User';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 
@@ -10,8 +9,7 @@ import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 export class AuthServiceStub {
     loggedIn: Subject<boolean> = new Subject();
 
-    constructor(public http: HttpClient,
-                public authManager: AuthManager) {
+    constructor(public http: HttpClient) {
         this.isLoggedIn();
     }
 
@@ -35,12 +33,9 @@ export class AuthServiceStub {
     }
 
     isLoggedIn(): boolean {
-        const loggedIn = !!this.authManager.getDecodedToken();
-        this.loggedIn.next(loggedIn);
-        return loggedIn;
+        return true;
     }
 }
-
 
 @Injectable()
 export class AuthManagerStub {
