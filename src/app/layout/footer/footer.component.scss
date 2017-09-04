@@ -28,15 +28,15 @@ li {
     display: inline;
     list-style-type: none;
     margin: 0;
-    padding: 0;
+    padding: 0 5px;
     white-space: nowrap;
 }
 
 /deep/ body bc-footer {
-    color: $dark-blue;
+    color: $dark-gray;
 
     a, button, .mat-button {
-        color: $dark-blue;
+        color: $dark-gray;
     }
 }
 

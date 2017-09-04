@@ -15,7 +15,7 @@ export class Answer extends DbIdObject<Answer> {
      * @ORM\ManyToOne(targetEntity="Card", inversedBy="answers")
      * @ORM\JoinColumn(name="card_id", referencedColumnName="$key")
      */
-    protected card_id: string;
+    protected card_id: number;
 
     /**
      * @ORM\Column(type="text", name="content")
@@ -57,6 +57,12 @@ export class Answer extends DbIdObject<Answer> {
      * @ORM\Column(type="boolean", name="deleted")
      */
     protected deleted = false;
+
+    protected id: number;
+
+    public getId(): number {
+        return this.id;
+    }
 
     /**
      * @ORM\PrePersist
@@ -233,7 +239,7 @@ export class Answer extends DbIdObject<Answer> {
      * @param card
      */
     public setCard(card?: Card): Observable<this> {
-        this.card_id = card.getKey();
+        this.card_id = card.getId();
         return Observable.of(this.$ref.child('card_id').set(this.card_id)).map(() => this);
     }
 

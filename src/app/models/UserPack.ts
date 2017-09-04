@@ -3,7 +3,16 @@ import { Pack } from './Pack';
 import { DbIdObject } from './DbIdObject';
 import { Response } from './Response';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseObjectFactory } from '../core/database';
+import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
+import { Card } from './Card';
+
+export class RetentionValue {
+    days: number;
+    lastInterval: Date;
+    lastAnswered: Date;
+    shouldDisplay: boolean;
+    cardId: number;
+}
 
 /**
  * @ORM\Entity
@@ -12,20 +21,21 @@ import { FirebaseObjectFactory } from '../core/database';
  * @ORM\HasLifecycleCallbacks()
  */
 export class UserPack extends DbIdObject<UserPack> {
+    static INTERVALS = [ 1, 2, 4, 7, 14, 28, 28 * 3, 28 * 6, 7 * 52 ];
 
     /**
      * @ORM\Id
      * @ORM\ManyToOne(targetEntity="User", inversedBy="userPacks", fetch="EXTRA_LAZY")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user_id: string;
+    protected user_id: number;
 
     /**
      * @ORM\Id
      * @ORM\ManyToOne(targetEntity="Pack", inversedBy="userPacks", fetch="EXTRA_LAZY")
      * @ORM\JoinColumn(name="pack_id", referencedColumnName="$key")
      */
-    protected pack_id: string;
+    protected pack_id: number;
 
     /** @ORM\Column(name="priority", type="decimal") */
     protected priority = 0.0;
@@ -54,7 +64,95 @@ export class UserPack extends DbIdObject<UserPack> {
     /**
      * @ORM\Column(type="boolean", name="removed")
      */
-    protected removed = false;
+    protected removed: number | boolean = false;
+
+    /**
+     * cut off time at 3:00 am, this prevents the card from reappearing on the home screen right at midnight
+     * @param input
+     * @param interval
+     * @returns {Date}
+     */
+    private static normalizeTimeAt3(input: Date, interval = 0): Date {
+        const lastPlusInterval = new Date(input);
+        lastPlusInterval.setHours(3, 0, 0);
+        lastPlusInterval.setDate(lastPlusInterval.getDate() + interval);
+        return lastPlusInterval;
+    }
+
+    /**
+     * Reducer function for the list of responses
+     * @param reducer
+     * @param current
+     * @returns {{i: number, last: Date, max: Date, correct: boolean}}
+     */
+    private static responseToInterval(reducer: { i: number, last: Date, max: Date, correct: boolean },
+                                      current: Response): { i: number, last: Date, max: Date, correct: boolean } {
+        if (current.getCorrect()) {
+            // if answers correctly in between time intervals ignore the response
+            //           |wrong              |<-next interval starts here
+            // timeline ----------------------->
+            //             |correct |correct |correct
+            while (reducer.i < UserPack.INTERVALS.length && (typeof reducer.last === 'undefined'
+            || UserPack.normalizeTimeAt3(current.getCreated())
+            >= UserPack.normalizeTimeAt3(reducer.last, UserPack.INTERVALS[ reducer.i ]))) {
+                reducer.last = current.getCreated();
+                reducer.i += 1;
+            }
+            reducer.correct = true;
+        } else {
+            reducer.i = 0;
+            reducer.last = current.getCreated();
+            reducer.correct = false;
+        }
+        reducer.max = current.getCreated();
+        return reducer;
+    }
+
+    /**
+     * Input is a list of response objects for a card,
+     * - output is the current interval (days),
+     * - the lastInterval is the last time they answered on schedule
+     * - shouldDisplay means the user hasn't answered, they answered incorrectly,
+     *    or the interval is up and they need to answer again.
+     * - lastAnswered is the max of the last time it was answered
+     * @param cardId
+     * @param cardResponses
+     * @returns {{days: number, lastInterval: Date, shouldDisplay: boolean, lastAnswered: Date, cardId: number}}
+     */
+    private static calculateRetention(cardId: number, cardResponses: Array<Response>): RetentionValue {
+        const retention = cardResponses
+            .reduce(UserPack.responseToInterval, {
+                last: void 0,
+                i: 0,
+                correct: false,
+                max: void 0
+            });
+        Object.assign(retention, {i: Math.min(UserPack.INTERVALS.length, Math.max(0, retention.i))});
+        return {
+            // interval value
+            days: UserPack.INTERVALS[ retention.i ],
+            // last interval date
+            lastInterval: retention.last,
+            // should display on home screen
+            shouldDisplay: typeof retention.last === 'undefined'
+            || (retention.i === 0 && !retention.correct)
+            || UserPack.normalizeTimeAt3(retention.last, UserPack.INTERVALS[ retention.i ])
+            <= UserPack.normalizeTimeAt3(new Date()),
+            // lastName response date for card, used for counting
+            lastAnswered: retention.max,
+            cardId
+        };
+    }
+
+    /**
+     * always sort responses based on creation date, oldest to latest makes it easy to pop() the latest
+     * @param r1
+     * @param r2
+     * @returns {number}
+     */
+    private static sortResponse(r1: Response, r2: Response): number {
+        return r1.getCreated().getTime() - r2.getCreated().getTime();
+    }
 
     /**
      * @return Response[]
@@ -71,9 +169,9 @@ export class UserPack extends DbIdObject<UserPack> {
          if (!userResponses.hasOwnProperty(r)) {
          continue;
          }
-         if (userResponses[ r ].getCard().getPack().getKey() === this.getPack().getKey()
-         && rids.indexOf(userResponses[ r ].getCard().getKey()) === -1) {
-         rids[ rids.length ] = userResponses[ r ].getCard().getKey();
+         if (userResponses[ r ].getCard().getPack().getId() === this.getPack().getId()
+         && rids.indexOf(userResponses[ r ].getCard().getId()) === -1) {
+         rids[ rids.length ] = userResponses[ r ].getCard().getId();
          responses[ responses.length ] = userResponses[ r ];
          if (userResponses[ r ].getCorrect()) {
          correct++;
@@ -85,86 +183,42 @@ export class UserPack extends DbIdObject<UserPack> {
          */
     }
 
-    public getRetention(refresh = false): Array<any> {
-        return [];
-        /*const intervals = [ 1, 2, 4, 7, 14, 28, 28 * 3, 28 * 6, 7 * 52 ];
-         if (typeof this.retention !== 'undefined' && !refresh) {
-         return this.retention;
-         }
-         refresh = true;
-         // if a card hasn't been answered, return the next card
-         const cards = this.getPack().getCards().filter((c: Card) => {
-         return !c.getDeleted();
-         });
-         const responses = this.getUser().getResponsesForPack(this.getPack());
-         const result;
-         for (const c in cards) {
-         if (!cards.hasOwnProperty(c)) {
-         continue;
-         }
-         /!** @var Card c *!/
-         /!** @var Response[] cardResponses *!/
-         const cardResponses = responses.matching(Criteria.create().where(Criteria.expr().eq('card', c)));
-         cardResponses.sort((r1: Response, r2: Response) => {
-         return r1.getCreated().getTime() - r2.getCreated().getTime();
-         });
-         /!** @var Date lastName *!/
-         let last = null;
-         let i = 0;
-         let correctAfter = false;
-         let max = null;
-         for (const r in cardResponses) {
-         if (!cardResponses.hasOwnProperty(r)) {
-         continue;
-         }
-         const response = cardResponses[ r ];
-         if (response.getCorrect()) {
-         // If it is in between time intervals ignore the response
-         while (i < intervals.length && (last === null || date_time_set(response.getCreated(), 3, 0, 0)
-         >= date_time_set(
-         date_add(last, new Date('P' + intervals[ i ] + 'D')),
-         3,
-         0,
-         0))) {
-         // shift the time interval if answers correctly in the right time frame
-         last = response.getCreated();
-         i += 1;
-         }
-         correctAfter = true;
-         } else {
-         i = 0;
-         last = response.getCreated();
-         correctAfter = false;
-         }
-         max = response.getCreated();
-         }
-         if (i < 0) {
-         i = 0;
-         }
-         if (i > intervals.length - 1) {
-         i = intervals.length - 1;
-         }
-         result[ cards[ c ].getKey() ] = [
-         // interval value
-         intervals[ i ],
-         // lastName interval date
-         typeof last !== 'undefined' ? last.format('response') : null,
-         // should display on home screen
-         typeof last !== 'undefined'
-         || (i === 0 && !correctAfter)
-         || date_add(date_time_set(last, 3, 0, 0), new Date('P'
-         + intervals[ i ]
-         + 'D')
-         )
-         <=
-         date_time_set(new Date(), 3, 0, 0),
-         // lastName response date for card, used for counting
-         typeof max !== 'undefined' ? null : max.format('response')
-         ];
-         }
-         this.retention = result;
-
-         return result;*/
+    /**
+     * Take a list of responses and calculate the retention values for the current date
+     *
+     * @param refresh
+     * @returns {any}
+     */
+    public getRetention(refresh = false): Observable<Array<RetentionValue>> {
+        if (typeof this.retention !== 'undefined' && typeof this.retention !== 'string' && !refresh) {
+            return Observable.of(this.retention);
+        }
+        refresh = true;
+        // stream all the data we need
+        return this.getPack()
+            .combineLatest(this.getUser(), (pack, user) => ({pack, user}))
+            // collect cards
+            .flatMap(({pack, user}) => pack.getCards().map(cards => ({cards, pack, user})))
+            // collect pack responses
+            .flatMap(({cards, pack, user}: { cards: Array<Card>, pack: Pack, user: User }) => {
+                if (pack.getId() + '' === '5') {
+                    console.log(cards);
+                }
+                const cardIds: Array<number> = cards.map(card => card.getId());
+                return user.getResponses()
+                    .map((r: Array<Response>) => r
+                        .filter(response => cardIds.indexOf(response.getCardId()) > -1))
+                    .map((r: Array<Response>) => r
+                        .sort(UserPack.sortResponse))
+                    .map(responses => ({responses, cards, pack, user}));
+            })
+            // calculate retention score for every card in the pack
+            .map(({responses, cards, pack, user}) => (this.retention = cards.map((card: Card) => {
+                const cardResponses = responses
+                    .filter(response => response.getCardId() === card.getId())
+                    .sort(UserPack.sortResponse);
+                return UserPack.calculateRetention(card.getId(), cardResponses);
+            })));
     }
 
     /**
@@ -287,8 +341,12 @@ export class UserPack extends DbIdObject<UserPack> {
      * @param user
      */
     public setUser(user: User): Observable<this> {
-        this.user_id = typeof user !== 'undefined' ? user.getKey() : void 0;
+        this.user_id = typeof user !== 'undefined' ? user.getId() : void 0;
         return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
+    }
+
+    public getUserId(): number {
+        return this.user_id;
     }
 
     /**
@@ -307,7 +365,7 @@ export class UserPack extends DbIdObject<UserPack> {
      * @param pack
      */
     public setPack(pack: Pack): Observable<this> {
-        this.pack_id = pack.getKey();
+        this.pack_id = pack.getId();
         return Observable.of(this.$ref.child('pack_id').set(this.pack_id)).map(() => this);
     }
 
@@ -317,7 +375,8 @@ export class UserPack extends DbIdObject<UserPack> {
      * @return Pack
      */
     public getPack(): Observable<Pack> {
-        return FirebaseObjectFactory<Pack>(this.$ref.root.child('pack/' + this.pack_id), Pack);
+        return FirebaseListFactory<Pack>(this.$ref.root.child('pack'), Pack)
+            .map(ups => ups.filter((pack: Pack) => pack.getId() === this.pack_id)[ 0 ]);
     }
 
     /**
@@ -339,8 +398,11 @@ export class UserPack extends DbIdObject<UserPack> {
      * @return boolean
      */
     public getRemoved(): Observable<boolean> {
-        return this.getPack()
-            .map(p => p.getStatus() === 'DELETED' || this.removed);
+        return Observable.of(this.removed === true || this.removed > 0)
+            .flatMap(is => is
+                ? Observable.of(true)
+                : this.getPack().map((p: Pack) => typeof p === 'undefined'
+                || p === null || p.getStatus() === 'DELETED'));
     }
 
     /**

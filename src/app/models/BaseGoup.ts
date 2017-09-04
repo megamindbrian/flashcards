@@ -13,6 +13,7 @@ export class BaseGroup extends DbIdObject<BaseGroup> {
      * @var array
      */
     protected roles: Array<string>;
+    protected id: number;
 
     /**
      * {@inheritdoc}
@@ -28,8 +29,8 @@ export class BaseGroup extends DbIdObject<BaseGroup> {
     /**
      * {@inheritdoc}
      */
-    public getKey(): string {
-        return this.$key;
+    public getId(): number {
+        return this.id;
     }
 
     /**

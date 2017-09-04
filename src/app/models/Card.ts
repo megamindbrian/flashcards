@@ -19,7 +19,7 @@ export class Card extends DbIdObject<Card> {
      * @ORM\ManyToOne(targetEntity="Pack", inversedBy="cards")
      * @ORM\JoinColumn(name="pack_id", referencedColumnName="$key")
      */
-    protected pack_id: string;
+    protected pack_id: number | string;
 
     /**
      * @ORM\Column(type="datetime", name="created")
@@ -56,6 +56,8 @@ export class Card extends DbIdObject<Card> {
      */
     protected recurrence = ''; // default is 1 day, 2 day 4 day, 1 week, 2 week, 4 week
 
+    protected id: number;
+
     /**
      * @ORM\OneToMany(targetEntity="Response", mappedBy="card", fetch="EXTRA_LAZY", indexBy="user")
      * @ORM\OrderBy({"created" = "DESC"})
@@ -70,7 +72,11 @@ export class Card extends DbIdObject<Card> {
     /**
      * @ORM\Column(type="boolean", name="deleted")
      */
-    protected deleted = false;
+    protected deleted: boolean | number = false;
+
+    public getId(): number {
+        return this.id;
+    }
 
     public getIndex(): Observable<number> {
         return Observable.of(1);
@@ -295,8 +301,12 @@ export class Card extends DbIdObject<Card> {
      * @param pack
      */
     public setPack(pack?: Pack): Observable<this> {
-        this.pack_id = pack.getKey();
+        this.pack_id = pack.getId();
         return Observable.of(this.$ref.child('pack_id').set(this.pack_id)).map(() => this);
+    }
+
+    public getPackId(): number {
+        return this.pack_id as number;
     }
 
     /**
@@ -390,7 +400,7 @@ export class Card extends DbIdObject<Card> {
      * @return boolean
      */
     public getDeleted(): boolean {
-        return this.deleted;
+        return this.deleted === true || this.deleted > 0;
     }
 
 }

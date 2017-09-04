@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SelfassessmentComponent } from './selfassessment.component';
+import { SummaryRowComponent } from './summary-row.component';
 
-describe('SelfassessmentComponent', () => {
-    let component: SelfassessmentComponent;
-    let fixture: ComponentFixture<SelfassessmentComponent>;
+describe('SummaryRowComponent', () => {
+    let component: SummaryRowComponent;
+    let fixture: ComponentFixture<SummaryRowComponent>;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [ SelfassessmentComponent ]
+            declarations: [ SummaryRowComponent ]
         })
             .compileComponents();
     }));
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(SelfassessmentComponent);
+        fixture = TestBed.createComponent(SummaryRowComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

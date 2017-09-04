@@ -5,7 +5,7 @@ import { AnswerComponent } from './answer/answer.component';
 import { MultipleComponent } from './multiple/multiple.component';
 import { PromptComponent } from './prompt/prompt.component';
 import { ResposeComponent } from './respose/respose.component';
-import { SelfassessmentComponent } from './selfassessment/selfassessment.component';
+import { SelfassessmentComponent } from './self-assessment/self-assessment.component';
 import { TruefalseComponent } from './truefalse/truefalse.component';
 import { FooterCountComponent } from './footer-count.component';
 import { AudioPlayerComponent } from './audio-player.component';

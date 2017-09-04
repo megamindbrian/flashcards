@@ -22,7 +22,7 @@
 
 h2 {
     display: flex;
-    border-bottom: 2px solid $dark-blue;
+    border-bottom: 2px solid $dark-gray;
     margin-top: 0;
     margin-bottom: 0;
 }
@@ -59,19 +59,7 @@ h2 > *:last-child {
     flex-grow: 1;
 }
 
-.pack-summary a {
-    display: flex;
-}
 
-.pack-summary a > * {
-    flex-grow: 1;
-}
-
-.pack-summary a > *:last-child {
-    flex-basis: 0;
-    text-align: right;
-    flex-shrink: 0;
-}
 
 /deep/ .home .mat-sidenav-container {
     background: url(/assets/neural_darkened.jpg) no-repeat center center #333;

@@ -7,23 +7,14 @@ import { FirebaseListFactory } from 'angularfire2/database';
 export abstract class DbIdObject<T> {
 
     // TODO: move ORM mapping login to unwrapper function?
-    constructor(public $ref: DatabaseReference,
-                public $exists: boolean,
-                public $key: string) {
-    }
-
-    /**
-     * Get $key
-     *
-     * @return string
-     */
-    public getKey(): string {
-        return this.$key;
+    constructor(protected $ref: DatabaseReference,
+                protected $exists: boolean,
+                protected $key: string) {
     }
 
     protected add<R extends DbIdObject<R>>(path: string, data: R): Observable<this> {
         return FirebaseListFactory(this.$ref.child(path))
-            .flatMap(r => r.push(data.getKey()))
+            .flatMap(r => r.push(data.$key))
             .map(() => this);
 
     }
@@ -31,7 +22,7 @@ export abstract class DbIdObject<T> {
     protected remove<R extends DbIdObject<R>>(path: string, data: R): Observable<this> {
         const list = FirebaseListFactory(this.$ref.child(path));
         return list
-            .flatMap(r => list.$ref.ref.child(r.indexOf(data.getKey())).remove())
+            .flatMap(r => list.$ref.ref.child(r.indexOf(data.$key)).remove())
             .map(() => this);
 
     }

@@ -48,7 +48,7 @@ describe('RegisterComponent', () => {
     });
 
     it('onRegister() should show done message', done => {
-        const navigateSpy = spyOn((comp as any).router, 'navigate');
+        const navigateSpy = spyOn(comp.router, 'navigate');
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             comp.onRegister();

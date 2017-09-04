@@ -11,7 +11,7 @@ body {
         height: 0;
         border-left: 16px solid transparent;
         border-right: 16px solid transparent;
-        border-top: 20px solid $act-orange;
+        border-top: 20px solid $secondary;
         display: inline-block;
         margin-left: 10px;
         position: absolute;
@@ -54,14 +54,14 @@ body {
     }
 
     a, .mat-raised-button {
-        color: $dark-blue;
+        color: $dark-gray;
     }
 
     a, .mat-raised-button, .mat-button, .mat-raised-button.mat-primary,
     a.mat-raised-button {
         text-decoration: none;
         outline: none;
-        border-color: $act-orange;
+        border-color: $secondary;
     }
 
     .mat-raised-button .mat-ripple {

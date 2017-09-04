@@ -8,7 +8,7 @@ export class BaseUser extends DbIdObject<BaseUser> {
     /**
      * @var mixed
      */
-    protected id: string;
+    protected id: number;
 
     /**
      * @var string
@@ -81,6 +81,10 @@ export class BaseUser extends DbIdObject<BaseUser> {
      * @var array
      */
     protected roles: Array<string>;
+
+    public getId(): number {
+        return this.id;
+    }
 
     /**
      * {@inheritdoc}

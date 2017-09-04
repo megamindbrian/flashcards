@@ -15,25 +15,25 @@ export class Invite extends DbIdObject<Invite> {
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="invites")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="$key", nullable=true)
      */
-    protected group_id: string;
+    protected group_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="Pack", inversedBy="invites")
      * @ORM\JoinColumn(name="pack_id", referencedColumnName="$key", nullable=true)
      */
-    protected pack_id: string;
+    protected pack_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="invites")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user_id: string;
+    protected user_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="invitees")
      * @ORM\JoinColumn(name="invitee_id", referencedColumnName="$key", nullable=true)
      */
-    protected invitee_id: string;
+    protected invitee_id: number;
 
     /**
      * @ORM\Column(type="string", length=256, name="firstName")
@@ -235,7 +235,7 @@ export class Invite extends DbIdObject<Invite> {
      * @param group
      */
     public setGroup(group?: Group): Observable<this> {
-        this.group_id = group.getKey();
+        this.group_id = group.getId();
         return Observable.of(this.$ref.child('group_id').set(this.group_id)).map(() => this);
     }
 
@@ -255,7 +255,7 @@ export class Invite extends DbIdObject<Invite> {
      * @param user
      */
     public setUser(user?: User): Observable<this> {
-        this.user_id = user.getKey();
+        this.user_id = user.getId();
         return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
     }
 
@@ -275,7 +275,7 @@ export class Invite extends DbIdObject<Invite> {
      * @param pack
      */
     public setPack(pack?: Pack): Observable<this> {
-        this.pack_id = pack.getKey();
+        this.pack_id = pack.getId();
         return Observable.of(this.$ref.child('pack_id').set(this.pack_id)).map(() => this);
     }
 
@@ -295,7 +295,7 @@ export class Invite extends DbIdObject<Invite> {
      * @param invitee
      */
     public setInvitee(invitee?: User): Observable<this> {
-        this.invitee_id = invitee.getKey();
+        this.invitee_id = invitee.getId();
         return Observable.of(this.$ref.child('invitee_id').set(this.invitee_id)).map(() => this);
     }
 

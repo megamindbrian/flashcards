@@ -15,31 +15,31 @@ export class Response extends DbIdObject<Response> {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
+    protected created: Date | string;
 
     /**
      * @ORM\ManyToOne(targetEntity="Card", inversedBy="responses")
      * @ORM\JoinColumn(name="card_id", referencedColumnName="$key", nullable=true)
      */
-    protected card_id: string;
+    protected card_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="Answer", inversedBy="responses")
      * @ORM\JoinColumn(name="answer_id", referencedColumnName="$key", nullable=true)
      */
-    protected answer_id: string;
+    protected answer_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="responses")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user_id: string;
+    protected user_id: number;
 
     /**
      * @ORM\OneToOne(targetEntity="File", inversedBy="response")
      * @ORM\JoinColumn(name="file_id", referencedColumnName="$key", nullable=true)
      */
-    protected file_id: string;
+    protected file_id: number;
 
     /**
      * @ORM\Column(type="text", name="value", nullable=true)
@@ -80,7 +80,9 @@ export class Response extends DbIdObject<Response> {
      * @return Date
      */
     public getCreated(): Date {
-        return this.created;
+        return typeof this.created === 'string'
+            ? (this.created = new Date(this.created))
+            : this.created as Date;
     }
 
     /**
@@ -111,7 +113,7 @@ export class Response extends DbIdObject<Response> {
      * @param answer
      */
     public setAnswer(answer?: Answer): Observable<this> {
-        this.answer_id = answer.getKey();
+        this.answer_id = answer.getId();
         return Observable.of(this.$ref.child('answer_id').set(this.answer_id)).map(() => this);
     }
 
@@ -131,8 +133,12 @@ export class Response extends DbIdObject<Response> {
      * @param user
      */
     public setUser(user?: User): Observable<this> {
-        this.user_id = user.getKey();
+        this.user_id = user.getId();
         return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
+    }
+
+    public getUserId(): number {
+        return this.user_id;
     }
 
     /**
@@ -151,7 +157,7 @@ export class Response extends DbIdObject<Response> {
      * @param file
      */
     public setFile(file?: File): Observable<this> {
-        this.file_id = file.getKey();
+        this.file_id = file.getId();
         return Observable.of(this.$ref.child('file_id').set(this.file_id)).map(() => this);
     }
 
@@ -192,8 +198,12 @@ export class Response extends DbIdObject<Response> {
      * @param card
      */
     public setCard(card?: Card): Observable<this> {
-        this.card_id = card.getKey();
+        this.card_id = card.getId();
         return Observable.of(this.$ref.child('card_id').set(this.card_id)).map(() => this);
+    }
+
+    public getCardId(): number {
+        return this.card_id;
     }
 
     /**

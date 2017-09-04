@@ -1,0 +1,5 @@
+<a [routerLink]="['card', firstCard]">
+    <strong *ngIf="isNew">New </strong>
+    <span>{{ pack?.getTitle() }}</span>
+    <span>{{ count }}</span>
+</a>

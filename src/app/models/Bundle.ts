@@ -28,7 +28,7 @@ export class Bundle extends DbIdObject<Bundle> {
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="bundles")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="$key", nullable=true)
      */
-    protected group_id: string;
+    protected group_id: number;
 
     /**
      * @ORM\ManyToMany(targetEntity="Pack")
@@ -290,7 +290,7 @@ export class Bundle extends DbIdObject<Bundle> {
      * @param group
      */
     public setGroup(group?: Group): Observable<this> {
-        this.group_id = group.getKey();
+        this.group_id = group.getId();
         return Observable.of(this.$ref.child('group_id').set(this.group_id)).map(() => this);
     }
 

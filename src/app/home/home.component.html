@@ -4,14 +4,7 @@
 <div class="pack-summary">
     <h2>
         <label>Today’s cards</label>
-        <label>1537 cards</label>
+        <label>{{ total }} cards</label>
     </h2>
-    <div class="pack-row" *ngFor="let pack of (home.summary | async)">
-        <a routerLink="/cards/1">
-            <label>
-                <span>{{ pack.getTitle() }}</span>
-            </label>
-            <label>15</label>
-        </a>
-    </div>
+    <bc-summary-row class="pack-row" [userPack]="pack" *ngFor="let pack of userPacks"></bc-summary-row>
 </div>

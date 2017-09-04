@@ -45,6 +45,7 @@ export class File extends DbIdObject<File> {
      * @ORM\Column(type="datetime", name="created")
      */
     protected created: Date;
+    protected id: number;
 
     /**
      * @ORM\PrePersist
@@ -59,8 +60,8 @@ export class File extends DbIdObject<File> {
      *
      * @return integer
      */
-    public getKey(): string {
-        return this.$key;
+    public getId(): number {
+        return this.id;
     }
 
     /**

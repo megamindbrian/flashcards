@@ -24,7 +24,7 @@ export class Visit extends DbIdObject<Visit> {
      * @ORM\ManyToOne(targetEntity="User", inversedBy="visits")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key", nullable=true)
      */
-    protected user_id: string;
+    protected user_id: number;
 
     /**
      * @ORM\Column(type="string", length=256, name="path")
@@ -176,7 +176,7 @@ export class Visit extends DbIdObject<Visit> {
      * @param session
      */
     public setSession(session?: Session): Observable<this> {
-        this.session_id = session.getKey();
+        this.session_id = session.getId();
         return Observable.of(this.$ref.child('session_id').set(this.session_id)).map(() => this);
     }
 
@@ -196,7 +196,7 @@ export class Visit extends DbIdObject<Visit> {
      * @param user
      */
     public setUser(user?: User): Observable<this> {
-        this.user_id = user.getKey();
+        this.user_id = user.getId();
         return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
     }
 

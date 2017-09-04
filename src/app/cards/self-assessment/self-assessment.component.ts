@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 
 @Component({
     selector: 'bc-selfassessment',
-    templateUrl: './selfassessment.component.html',
-    styleUrls: [ './selfassessment.component.scss' ]
+    templateUrl: './self-assessment.component.html',
+    styleUrls: [ './self-assessment.component.scss' ]
 })
 export class SelfassessmentComponent implements OnInit {
 
