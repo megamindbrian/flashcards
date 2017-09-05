@@ -1,6 +1,6 @@
 import { User } from './User';
 import { Pack } from './Pack';
-import { DbIdObject } from './DbIdObject';
+import { DbDeletableObject } from './DbIdObject';
 import { Response } from './Response';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
@@ -22,7 +22,7 @@ export class RetentionValue {
  *     @ORM\UniqueConstraint(name="username_idx", columns={"user_id","pack_id"})})
  * @ORM\HasLifecycleCallbacks()
  */
-export class UserPack extends DbIdObject<UserPack> {
+export class UserPack extends DbDeletableObject<UserPack> {
     static INTERVALS = [ 1, 2, 4, 7, 14, 28, 28 * 3, 28 * 6, 7 * 52 ];
 
     /**
@@ -56,7 +56,6 @@ export class UserPack extends DbIdObject<UserPack> {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
 
     /**
      * @ORM\Column(type="array", name="retention", nullable=true)
@@ -224,14 +223,6 @@ export class UserPack extends DbIdObject<UserPack> {
     }
 
     /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
-
-    /**
      * Set priority
      *
      * @return UserPack
@@ -313,27 +304,6 @@ export class UserPack extends DbIdObject<UserPack> {
      */
     public getDownloaded(): Date {
         return this.downloaded;
-    }
-
-    /**
-     * Set created
-     *
-     * @return UserPack
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return this.created;
     }
 
     /**

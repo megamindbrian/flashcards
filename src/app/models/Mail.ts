@@ -1,11 +1,11 @@
-import { DbIdObject } from './DbIdObject';
+import { DbDeletableObject } from './DbIdObject';
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="mail")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Mail extends DbIdObject<Mail> {
+export class Mail extends DbDeletableObject<Mail> {
 
     /**
      * @ORM\Column(type="integer", name="status")
@@ -25,15 +25,6 @@ export class Mail extends DbIdObject<Mail> {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
-
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
 
     /**
      * Set status
@@ -105,27 +96,6 @@ export class Mail extends DbIdObject<Mail> {
      */
     public getEnvironment(): string {
         return this.environment;
-    }
-
-    /**
-     * Set created
-     *
-     * @return Mail
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return this.created;
     }
 
 }

@@ -39,8 +39,6 @@ h2 > *:last-child {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
-    padding: 60px;
 }
 
 .pack-summary {
@@ -59,9 +57,16 @@ h2 > *:last-child {
     flex-grow: 1;
 }
 
-
-
 /deep/ .home .mat-sidenav-container {
     background: url(/assets/neural_darkened.jpg) no-repeat center center #333;
     background-size: cover;
+}
+
+/deep/ bc-footer {
+    position: absolute;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    right: 0;
+    z-index: 100;
 }

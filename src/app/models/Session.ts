@@ -1,10 +1,13 @@
 import { Visit } from './Visit';
-import { DbIdObject } from './DbIdObject';
+import { DbDeletableObject } from './DbIdObject';
+import { VisitCollection } from './Factories';
+import { Observable } from 'rxjs/Observable';
+
 /**
  * @ORM\Entity
  * @ORM\Table(name="session")
  */
-export class Session extends DbIdObject<Session> {
+export class Session extends DbDeletableObject<Session> implements VisitCollection {
     /**
      * @ORM\Column(type="string", length=128, name="session_id")
      * @ORM\Id
@@ -30,7 +33,14 @@ export class Session extends DbIdObject<Session> {
      * @ORM\OneToMany(targetEntity="Visit", mappedBy="session")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected visits: Array<Visit>;
+
+    addVisit = (bundle: Visit) => Observable.of(this);
+    removeVisit = (bundle: Visit) => Observable.of(this);
+    getVisits = () => Observable.of([] as Array<Visit>);
+
+    public getSessionId(): string {
+        return this.session_id;
+    }
 
     /**
      * Set id
@@ -42,15 +52,6 @@ export class Session extends DbIdObject<Session> {
         this.session_id = id;
 
         return this;
-    }
-
-    /**
-     * Get $key
-     *
-     * @return string
-     */
-    public getId(): string {
-        return this.session_id;
     }
 
     /**
@@ -93,37 +94,6 @@ export class Session extends DbIdObject<Session> {
      */
     public getTime(): Date {
         return this.session_time;
-    }
-
-    /**
-     * Add visits
-     *
-     * @return Session
-     * @param visits
-     */
-    public addVisit(visits: Visit): Session {
-        this.visits[ this.visits.length ] = visits;
-
-        return this;
-    }
-
-    /**
-     * Remove visits
-     *
-     * @param visits
-     */
-    public removeVisit(visits: Visit): Array<Visit> {
-        this.$ref.child('visits/' + this.visits.indexOf(visits)).remove();
-        return this.visits;
-    }
-
-    /**
-     * Get visits
-     *
-     * @return Array<Visit>
-     */
-    public getVisits(): Array<Visit> {
-        return this.visits;
     }
 
     /**

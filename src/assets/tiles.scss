@@ -1,9 +1,9 @@
 @import './colors';
 
-bc-packs {
+bc-pack-row {
 
-    [class*="-row"] a.pack-icon:after,
-    [class*="-row"] a.pack-icon:before {
+    & a.pack-icon:after,
+    & a.pack-icon:before {
         content: " ";
         display: block;
         position: absolute;
@@ -19,18 +19,18 @@ bc-packs {
         transition: .15s ease-in-out;
     }
 
-    [class*="-row"] a.pack-icon:after {
+    & a.pack-icon:after {
         margin-top: -14px;
         border-top: 4px solid $light-gray;
         border-bottom: 2px solid $light-gray;
     }
 
-    [class*="-row"]:hover a.pack-icon:before {
+    &:hover a.pack-icon:before {
         height: 0;
         border: 0 solid transparent;
     }
 
-    [class*="-row"]:hover a.pack-icon:after {
+    &:hover a.pack-icon:after {
         height: 0;
         border-right: 0;
         margin-top: -20px;
@@ -46,7 +46,7 @@ bc-packs {
     display: block;
     height: 25px;
     width: 25px;
-    top:50%;
+    top: 50%;
     margin-top: -12px;
 }
 

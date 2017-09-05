@@ -1,15 +1,19 @@
-import { Group } from './Group';
-import { Pack } from './Pack';
 import { Payment } from './Payment';
 import { Visit } from './Visit';
-import { Invite } from './Invite';
 import { UserPack } from './UserPack';
 import { BaseUser } from './BaseUser';
 import { Response } from './Response';
 import { File } from './File';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
+import { FirebaseObjectFactory } from '../core/database';
 import 'rxjs/add/operator/combineLatest';
+import {
+    FileCollection,
+    InviteCollection, InviteeCollection, PackCollection, PaymentCollection, ResponseCollection, UserPackCollection,
+    VisitCollection
+} from './Factories';
+import { Invite } from './Invite';
+import { Pack } from './Pack';
 
 /**
  * @ORM\Entity
@@ -34,7 +38,14 @@ import 'rxjs/add/operator/combineLatest';
  * })
  */
 
-export class User extends BaseUser {
+export class User extends BaseUser implements VisitCollection,
+                                              ResponseCollection,
+                                              InviteeCollection,
+                                              InviteCollection,
+                                              UserPackCollection,
+                                              PackCollection,
+                                              FileCollection,
+                                              PaymentCollection {
 
     /**
      * @ORM\OneToMany(targetEntity="Payment", mappedBy="user")
@@ -79,7 +90,6 @@ export class User extends BaseUser {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
 
     /**
      * @ORM\Column(type="datetime", name="last_visit", nullable = true)
@@ -113,15 +123,38 @@ export class User extends BaseUser {
      */
 
     /** @ORM\Column(name="properties", type="array", nullable=true) */
-    protected properties: { [index: string]: any } = {};
 
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
+    addInvite = (bundle: Invite) => Observable.of(this);
+    removeInvite = (bundle: Invite) => Observable.of(this);
+    getInvites = () => Observable.of([] as Array<Invite>);
+
+    addInvitee = (bundle: Invite) => Observable.of(this);
+    removeInvitee = (bundle: Invite) => Observable.of(this);
+    getInvitees = () => Observable.of([] as Array<Invite>);
+
+    addVisit = (bundle: Visit) => Observable.of(this);
+    removeVisit = (bundle: Visit) => Observable.of(this);
+    getVisits = () => Observable.of([] as Array<Visit>);
+
+    addResponse = (bundle: Response) => Observable.of(this);
+    removeResponse = (bundle: Response) => Observable.of(this);
+    getResponses = () => Observable.of([] as Array<Response>);
+
+    addUserPack = (bundle: UserPack) => Observable.of(this);
+    removeUserPack = (bundle: UserPack) => Observable.of(this);
+    getUserPacks = () => Observable.of([] as Array<UserPack>);
+
+    addPack = (bundle: Pack) => Observable.of(this);
+    removePack = (bundle: Pack) => Observable.of(this);
+    getPacks = () => Observable.of([] as Array<Pack>);
+
+    addFile = (bundle: File) => Observable.of(this);
+    removeFile = (bundle: File) => Observable.of(this);
+    getFiles = () => Observable.of([] as Array<File>);
+
+    addPayment = (bundle: Payment) => Observable.of(this);
+    removePayment = (bundle: Payment) => Observable.of(this);
+    getPayments = () => Observable.of([] as Array<Payment>);
 
     /**
      * @return Invite|User
@@ -166,24 +199,16 @@ export class User extends BaseUser {
      * @param prop
      * @param value
      */
-    public setProperty(prop: string, value: any): this {
-        this.properties[ prop ] = value;
-        this.setProperties(this.properties);
-        return this;
-    }
 
     /**
      * @param prop
      * @return null
      */
-    public getProperty(prop: string): any {
-        return this.properties[ prop ];
-    }
 
     /**
      * @return Array<Pack>
      */
-    public getPacks(): Observable<Array<Pack>> {
+    public getAllPacks(): Observable<Array<Pack>> {
         const userPacks = this.getUserPacks()
             .flatMap(ups => Observable.zip(...ups
                 .map(up => up.getPack()
@@ -191,46 +216,13 @@ export class User extends BaseUser {
             .map((ups: Array<{ p: Pack, up: UserPack }>) => ups
                 .filter(({p, up}) => up.getRemoved())
                 .map(({p, up}) => p));
-        return this.getAuthored()
+        return this.getPacks()
             .combineLatest(userPacks, (packs, ups) => ({packs, ups}))
             .map(({packs, ups}) => packs.concat(ups))
             .map(p => p
                 .filter((elem: Pack, pos: number, arr: Array<Pack>) => {
                     return arr.indexOf(elem) === pos;
                 }));
-    }
-
-    /**
-     * @return UserPack|null
-     * @param pack
-     */
-    public getUserPack(pack: Pack): Observable<UserPack> {
-        return this.getUserPacks()
-            .flatMap(userPacks => Observable.zip(...userPacks
-                .map(up => up.getPack().map(p => ({p, up})))))
-            .map(upp => upp.map(up => up as { p: Pack, up: UserPack }))
-            .map(upp => upp.filter(({p, up}) => p.getId() === pack.getId())[ 0 ].up);
-    }
-
-    /**
-     * Set created
-     *
-     * @return User
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return this.created;
     }
 
     /**
@@ -276,111 +268,6 @@ export class User extends BaseUser {
     }
 
     /**
-     * Set properties
-     *
-     * @return User
-     * @param properties
-     */
-    public setProperties(properties: { [index: string]: any }): this {
-        this.properties = properties;
-
-        return this;
-    }
-
-    /**
-     * Get properties
-     *
-     * @return string
-     */
-    public getProperties(): { [index: string]: any } {
-        return this.properties;
-    }
-
-    /**
-     * Add payments
-     *
-     * @return User
-     * @param payment
-     */
-    public addPayment(payment: Payment): Observable<this> {
-        return this.add('payments', payment);
-    }
-
-    /**
-     * Remove payments
-     *
-     * @param payment
-     */
-    public removePayment(payment: Payment): Observable<this> {
-        return this.remove('payments', payment);
-    }
-
-    /**
-     * Get payments
-     *
-     * @return Array<Payment>
-     */
-    public getPayments(): Observable<Array<Payment>> {
-        return this.list('payments', ref => FirebaseObjectFactory<Payment>(ref, Payment));
-    }
-
-    /**
-     * Add visits
-     *
-     * @return User
-     * @param visit
-     */
-    public addVisit(visit: Visit): Observable<this> {
-        return this.add('visits', visit);
-    }
-
-    /**
-     * Remove visits
-     *
-     * @param visit
-     */
-    public removeVisit(visit: Visit): Observable<this> {
-        return this.remove('visits', visit);
-    }
-
-    /**
-     * Get visits
-     *
-     * @return Array<Visit>
-     */
-    public getVisits(): Observable<Array<Visit>> {
-        return this.list('visits', ref => FirebaseObjectFactory<Visit>(ref, Visit));
-    }
-
-    /**
-     * Add files
-     *
-     * @return User
-     * @param file
-     */
-    public addFile(file: File): Observable<this> {
-        return this.add('files', file);
-    }
-
-    /**
-     * Remove files
-     *
-     * @param file
-     */
-    public removeFile(file: File): Observable<this> {
-        return this.remove('files', file);
-    }
-
-    /**
-     * Get files
-     *
-     * @return Array<File>
-     */
-    public getFiles(): Observable<Array<File>> {
-        return this.list('files', ref => FirebaseObjectFactory<File>(ref, File));
-    }
-
-    /**
      * Set photo
      *
      * @return User
@@ -397,6 +284,9 @@ export class User extends BaseUser {
      * @return File
      */
     public getPhoto(): Observable<File> {
+        if (typeof this.file_id === 'undefined') {
+            return Observable.of(void 0);
+        }
         return FirebaseObjectFactory<File>(this.$ref.root.child('file/' + this.file_id), File);
     }
 
@@ -422,144 +312,27 @@ export class User extends BaseUser {
     }
 
     /**
-     * Add invites
-     *
-     * @return User
-     * @param invite
-     */
-    public addInvite(invite: Invite): Observable<this> {
-        return this.add('invites', invite);
-    }
-
-    /**
-     * Remove invites
-     *
-     * @param invite
-     */
-    public removeInvite(invite: Invite): Observable<this> {
-        return this.remove('invites', invite);
-    }
-
-    /**
-     * Get invites
-     *
-     * @return Array<Invite>
-     */
-    public getInvites(): Observable<Array<Invite>> {
-        return this.list('invites', ref => FirebaseObjectFactory<Invite>(ref, Invite));
-    }
-
-    /**
-     * Add invitees
-     *
-     * @return User
-     * @param invitee
-     */
-    public addInvitee(invitee: Invite): Observable<this> {
-        return this.add('invitees', invitee);
-    }
-
-    /**
-     * Remove invitees
-     *
-     * @param invitee
-     */
-    public removeInvitee(invitee: Invite): Observable<this> {
-        return this.remove('invitees', invitee);
-    }
-
-    /**
-     * Get invitees
-     *
-     * @return Array<Invite>
-     */
-    public getInvitees(): Observable<Array<Invite>> {
-        return this.list('invitees', ref => FirebaseObjectFactory<Invite>(ref, Invite));
-    }
-
-    /**
-     * Add responses
-     *
-     * @return User
-     * @param response
-     */
-    public addResponse(response: Response): Observable<this> {
-        return this.add('responses', response);
-    }
-
-    /**
-     * Remove responses
-     *
-     * @param response
-     */
-    public removeResponse(response: Response): Observable<this> {
-        return this.remove('responses', response);
-    }
-
-    /**
      * Get responses
      *
      * @return Array<Response>
      */
+
+    /*
     public getResponses(): Observable<Array<Response>> {
         return FirebaseListFactory<Response>(this.$ref.root.child('response'), Response)
             .map((responses: Array<Response>) => responses
                 .filter((response: Response) => response.getUserId() === this.getId()));
         // this.list('responses', ref => FirebaseObjectFactory(ref, Response));
     }
-
-    /**
-     * Add authored
-     *
-     * @return User
-     * @param authored
-     */
-    public addAuthored(authored: Pack): Observable<this> {
-        return this.add('authored', authored);
-    }
-
-    /**
-     * Remove authored
-     *
-     * @param authored
-     */
-    public removeAuthored(authored: Pack): Observable<this> {
-        return this.remove('authored', authored);
-    }
-
-    /**
-     * Get authored
-     *
-     * @return Array<Pack>
-     */
-    public getAuthored(): Observable<Array<Pack>> {
-        return this.list('authored', ref => FirebaseObjectFactory<Pack>(ref, Pack));
-    }
-
-    /**
-     * Add userPacks
-     *
-     * @return User
-     * @param userPacks
-     */
-    public addUserPack(userPacks: UserPack): Observable<this> {
-        return this.add('userPacks', userPacks);
-    }
-
-    /**
-     * Remove userPacks
-     *
-     * @param userPacks
-     */
-    public removeUserPack(userPacks: UserPack): Observable<this> {
-        return this.remove('userPacks', userPacks);
-    }
+*/
 
     /**
      * Get userPacks
      *
      * @return Array<UserPack>
      */
+
+    /*
     public getUserPacks(): Observable<Array<UserPack>> {
         return FirebaseListFactory<UserPack>(this.$ref.root.child('user_pack'), UserPack)
             .map((ups: Array<UserPack>) => ups
@@ -570,16 +343,7 @@ export class User extends BaseUser {
                         .map(removed => ({removed, up})))))
             .map((ups: Array<{ removed: boolean, up: UserPack }>) => ups.filter(up => !up.removed).map(up => up.up));
     }
-
-    /**
-     * Get groups
-     *
-     * @return Array<Group>
-     */
-    public getGroups(): Observable<Array<Group>> {
-        return this.list('groups', ref => FirebaseObjectFactory<Group>(ref, Group));
-    }
-
+*/
     /**
      * Set devices
      *

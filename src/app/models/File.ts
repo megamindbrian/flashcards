@@ -1,19 +1,21 @@
 import { User } from './User';
 import { Response } from './Response';
-import { DbIdObject } from './DbIdObject';
+import { DbDeletableObject } from './DbIdObject';
+import { Observable } from 'rxjs/Observable';
+import { FirebaseObjectFactory } from '../core/database';
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="file")
  * @ORM\HasLifecycleCallbacks()
  */
-export class File extends DbIdObject<File> {
+export class File extends DbDeletableObject<File> {
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="files")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user: User;
+    protected user_id: number;
 
     /**
      * @ORM\OneToOne(targetEntity="Response", mappedBy="file", fetch="EXTRA_LAZY")
@@ -44,25 +46,6 @@ export class File extends DbIdObject<File> {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
-    protected id: number;
-
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
-
-    /**
-     * Get $key
-     *
-     * @return integer
-     */
-    public getId(): number {
-        return this.id;
-    }
 
     /**
      * Set uploadId
@@ -128,36 +111,14 @@ export class File extends DbIdObject<File> {
     }
 
     /**
-     * Set created
-     *
-     * @return File
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return this.created;
-    }
-
-    /**
      * Set user
      *
      * @return File
      * @param user
      */
-    public setUser(user?: User): this {
-        this.user = user;
-
-        return this;
+    public setUser(user?: User): Observable<this> {
+        this.user_id = user.getId();
+        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
     }
 
     /**
@@ -165,8 +126,8 @@ export class File extends DbIdObject<File> {
      *
      * @return User
      */
-    public getUser(): User {
-        return this.user;
+    public getUser(): Observable<User> {
+        return FirebaseObjectFactory<User>(this.$ref.root.child('pack/' + this.user_id), User);
     }
 
     /**

@@ -10,9 +10,7 @@ export class EmailsService {
     public list: FirebaseListObservable<Array<Mail>>;
 
     constructor(public database: AngularFireDatabase) {
-        this.list = FirebaseListFactory<Mail>(
-            getRef(this.database.app, 'mail'),
-            (ref: firebase.database.Reference, exists: boolean, key: string) => new Mail(ref, exists, key));
+        this.list = FirebaseListFactory<Mail>(getRef(this.database.app, 'mail'), Mail);
     }
 
 }

@@ -6,12 +6,24 @@ import { BaseGroup } from './BaseGoup';
 import { File } from './File';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseListObservable } from 'angularfire2/database';
+import {
+    BundleCollection, FileCollectionForeignKey, GroupCollection, GroupCollectionForeignKey, InviteCollection,
+    PackCollection,
+    UserCollection
+} from './Factories';
+
 /**
  * @ORM\Entity
  * @ORM\Table(name="ss_group")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Group extends BaseGroup {
+export class Group extends BaseGroup implements BundleCollection,
+                                                UserCollection,
+                                                PackCollection,
+                                                InviteCollection,
+                                                GroupCollection,
+                                                GroupCollectionForeignKey<Group>,
+                                                FileCollectionForeignKey<Group> {
 
     /**
      * @ORM\Column(type="string", length=256, name="description")
@@ -21,23 +33,19 @@ export class Group extends BaseGroup {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
 
     /**
      * @ORM\OneToMany(targetEntity="Bundle", mappedBy="group", fetch="EXTRA_LAZY")
      */
-    protected bundles: Array<Bundle>;
 
     /**
      * @ORM\OneToMany(targetEntity="Invite", mappedBy="group", fetch="EXTRA_LAZY")
      */
-    protected invites: Array<Invite>;
 
     /**
      * @ORM\OneToMany(targetEntity="Pack", mappedBy="group", fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected packs: Array<Pack>;
 
     /**
      * @ORM\ManyToMany(targetEntity="Pack", mappedBy="groups", fetch="EXTRA_LAZY")
@@ -47,38 +55,55 @@ export class Group extends BaseGroup {
     /**
      * @ORM\ManyToMany(targetEntity="User", mappedBy="groups", fetch="EXTRA_LAZY")
      */
-    protected users: Array<User>;
 
     /**
      * @ORM\ManyToOne(targetEntity="File")
      * @ORM\JoinColumn(name="file_id", referencedColumnName="$key", nullable = true)
      */
-    protected logo: File;
+    protected file_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="Group")
      * @ORM\JoinColumn(name="parent", referencedColumnName="$key", nullable = true)
      */
-    protected parent: Group;
+    protected group_id: number;
 
     /**
      * @ORM\OneToMany(targetEntity="Group", mappedBy="parent", fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected subgroups: Array<Group>;
 
     /**
      * @ORM\Column(type="boolean", name="deleted")
      */
-    protected deleted = false;
 
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
+    addBundle = (bundle: Bundle) => Observable.of(this);
+    removeBundle = (bundle: Bundle) => Observable.of(this);
+    getBundles = () => Observable.of([] as Array<Bundle>);
+
+    addUser = (bundle: User) => Observable.of(this);
+    removeUser = (bundle: User) => Observable.of(this);
+    getUsers = () => Observable.of([] as Array<User>);
+
+    addPack = (bundle: Pack) => Observable.of(this);
+    removePack = (bundle: Pack) => Observable.of(this);
+    getPacks = () => Observable.of([] as Array<Pack>);
+
+    addInvite = (bundle: Invite) => Observable.of(this);
+    removeInvite = (bundle: Invite) => Observable.of(this);
+    getInvites = () => Observable.of([] as Array<Invite>);
+
+    addGroup = (bundle: Group) => Observable.of(this);
+    removeGroup = (bundle: Group) => Observable.of(this);
+    getGroups = () => Observable.of([] as Array<Group>);
+
+    setGroup = (bundle: Group) => Observable.of(this);
+    getGroupId = () => 0;
+    getGroup = () => Observable.of(void 0 as Group);
+
+    setFile = (file: File) => Observable.of(this);
+    getFileId = () => 0;
+    getFile = () => Observable.of(void 0 as File);
 
     /**
      * Set description
@@ -118,182 +143,11 @@ export class Group extends BaseGroup {
      *
      * @return Date
      */
-    public getCreated(): Date {
-        return this.created;
-    }
 
     public getRoles(): Array<string> {
         return this.roles.filter(r => {
             return typeof r !== 'undefined';
         });
-    }
-
-    /**
-     * Add users
-     *
-     * @return Group
-     * @param users
-     */
-    public addUser(users: User): this {
-        if (this.getUsers().indexOf(users) === -1) {
-            this.getUsers().push(users);
-            users.addGroup(this);
-        }
-        return this;
-    }
-
-    /**
-     * Remove users
-     *
-     * @param users
-     */
-    public removeUser(users: User): Array<User> {
-        this.$ref.child('users/' + this.users.indexOf(users)).remove();
-        return this.users;
-    }
-
-    /**
-     * Get users
-     *
-     * @return Array<User>
-     */
-    public getUsers(): Array<User> {
-        return this.users;
-    }
-
-    /**
-     * Add packs
-     *
-     * @return Group
-     * @param packs
-     */
-    public addPack(packs: Pack): this {
-        this.packs.push(packs);
-
-        return this;
-    }
-
-    /**
-     * Remove packs
-     *
-     * @param packs
-     */
-    public removePack(packs: Pack): Array<Pack> {
-        this.$ref.child('packs/' + this.packs.indexOf(packs)).remove();
-        return this.packs;
-    }
-
-    /**
-     * Get packs
-     *
-     * @return Array<Pack>
-     */
-    public getPacks(): Observable<Pack> {
-        return this.groupPacks;
-    }
-
-    /**
-     * Set logo
-     *
-     * @return Group
-     * @param logo
-     */
-    public setLogo(logo?: File): this {
-        this.logo = logo;
-
-        return this;
-    }
-
-    /**
-     * Get logo
-     *
-     * @return File
-     */
-    public getLogo(): File {
-        return this.logo;
-    }
-
-    /**
-     * Set deleted
-     *
-     * @return Group
-     * @param deleted
-     */
-    public setDeleted(deleted: boolean): this {
-        this.deleted = deleted;
-
-        return this;
-    }
-
-    /**
-     * Get deleted
-     *
-     * @return boolean
-     */
-    public getDeleted(): boolean {
-        return this.deleted;
-    }
-
-    /**
-     * Add bundles
-     *
-     * @return Group
-     * @param bundles
-     */
-    public addBundle(bundles: Bundle): this {
-        this.bundles[ this.bundles.length ] = bundles;
-
-        return this;
-    }
-
-    /**
-     * Remove bundles
-     *
-     * @param bundles
-     */
-    public removeBundle(bundles: Bundle): Array<Bundle> {
-        this.$ref.child('bundles/' + this.bundles.indexOf(bundles)).remove();
-        return this.bundles;
-    }
-
-    /**
-     * Get bundles
-     *
-     * @return Array<Bundle>
-     */
-    public getBundles(): Array<Bundle> {
-        return this.bundles;
-    }
-
-    /**
-     * Add invites
-     *
-     * @return Group
-     * @param invites
-     */
-    public addInvite(invites: Invite): this {
-        this.invites[ this.invites.length ] = invites;
-
-        return this;
-    }
-
-    /**
-     * Remove invites
-     *
-     * @param invites
-     */
-    public removeInvite(invites: Invite): Array<Invite> {
-        this.$ref.child('invites/' + this.invites.indexOf(invites)).remove();
-        return this.invites;
-    }
-
-    /**
-     * Get invites
-     *
-     * @return Array<Invite>
-     */
-    public getInvites(): Array<Invite> {
-        return this.invites;
     }
 
     /**
@@ -326,63 +180,6 @@ export class Group extends BaseGroup {
      */
     public getGroupPacks(): Observable<Pack> {
         return this.groupPacks;
-    }
-
-    /**
-     * Set parent
-     *
-     *
-     * @return Group
-     * @param parent
-     */
-    public setParent(parent?: Group): this {
-        if (typeof parent !== 'undefined' || parent === this) {
-            this.$ref.child('parent').remove();
-        } else {
-            this.parent = parent;
-        }
-        return this;
-    }
-
-    /**
-     * Get parent
-     *
-     * @return Group
-     */
-    public getParent(): Group {
-        return this.parent;
-    }
-
-    /**
-     * Add subgroup
-     *
-     *
-     * @return Group
-     * @param subgroup
-     */
-    public addSubgroup(subgroup: Group): this {
-        this.subgroups[ this.subgroups.length ] = subgroup;
-
-        return this;
-    }
-
-    /**
-     * Remove subgroup
-     *
-     * @param subgroup
-     */
-    public removeSubgroup(subgroup: Group): Array<Group> {
-        this.$ref.child('subgroups/' + this.subgroups.indexOf(subgroup)).remove();
-        return this.subgroups;
-    }
-
-    /**
-     * Get subgroups
-     *
-     * @return Array<Group>
-     */
-    public getSubgroups(): Array<Group> {
-        return this.subgroups;
     }
 
 }

@@ -1,0 +1,11 @@
+<a [routerLink]="['/cards', firstCard]" class="pack-icon">
+    <b>
+        <img height="50" src="{{ logo }}"
+             class="centerized">
+    </b>
+    <span>
+        {{ pack.getTitle() }}
+        <i>{{ cardCount }} cards</i>
+    </span>
+</a>
+<a title="Edit pack" [routerLink]="['/packs', pack.getId()]" class="edit-icon">&nbsp;</a>

@@ -1,15 +1,16 @@
 import { Pack } from './Pack';
 import { User } from './User';
 import { Group } from './Group';
-import { DbIdObject } from './DbIdObject';
+import { DbPropertiesObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseObjectFactory } from '../core/database';
+
 /**
  * @ORM\Entity
  * @ORM\Table(name="invite")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Invite extends DbIdObject<Invite> {
+export class Invite extends DbPropertiesObject<Invite> {
 
     /**
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="invites")
@@ -63,7 +64,6 @@ export class Invite extends DbIdObject<Invite> {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
 
     /**
      * @ORM\Column(type="datetime", name="reminder", nullable = true)
@@ -71,15 +71,6 @@ export class Invite extends DbIdObject<Invite> {
     protected reminder: Date;
 
     /** @ORM\Column(name="properties", type="array", nullable=true) */
-    protected properties: { [index: string]: any };
-
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
 
     /**
      * Set firstName
@@ -187,27 +178,6 @@ export class Invite extends DbIdObject<Invite> {
     }
 
     /**
-     * Set created
-     *
-     * @return Invite
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return this.created;
-    }
-
-    /**
      * Set reminder
      *
      * @return Invite
@@ -306,26 +276,5 @@ export class Invite extends DbIdObject<Invite> {
      */
     public getInvitee(): Observable<User> {
         return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.invitee_id), User);
-    }
-
-    /**
-     * Set properties
-     *
-     * @return Invite
-     * @param properties
-     */
-    public setProperties(properties: any): this {
-        this.properties = properties;
-
-        return this;
-    }
-
-    /**
-     * Get properties
-     *
-     * @return array
-     */
-    public getProperties(): any {
-        return this.properties;
     }
 }

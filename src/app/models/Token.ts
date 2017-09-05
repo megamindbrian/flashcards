@@ -1,9 +1,9 @@
-import { DbIdObject } from './DbIdObject';
+import { DbDeletableObject } from './DbIdObject';
 /**
  * @ORM\Entity
  * @ORM\Table(name="rememberme_token")
  */
-export class Token extends DbIdObject<Token> {
+export class Token extends DbDeletableObject<Token> {
 
     /**
      * @ORM\Column(type="string", length=88, name="value")

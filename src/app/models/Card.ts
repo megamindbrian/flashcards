@@ -1,16 +1,18 @@
 import { Answer } from './Answer';
-import { Pack } from './Pack';
 import { Response } from './Response';
-import { DbIdObject } from './DbIdObject';
+import { DbDeletableObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseObjectFactory } from '../core/database';
+import { AnswerCollection, PackCollectionForeignKey, ResponseCollection } from './Factories';
+import { Pack } from './Pack';
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="card")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Card extends DbIdObject<Card> {
+export class Card extends DbDeletableObject<Card> implements AnswerCollection,
+                                                             ResponseCollection,
+                                                             PackCollectionForeignKey<Card> {
     static SELF_ASSESSMENT = 'SELF_ASSESSMENT';
     static SHORT_ANSWER = 'SHORT_ANSWER';
     static MULTIPLE_CHOICE = 'MULTIPLE_CHOICE';
@@ -24,12 +26,10 @@ export class Card extends DbIdObject<Card> {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
 
     /**
      * @ORM\Column(type="datetime", name="modified", nullable=true)
      */
-    protected modified: Date;
 
     /**
      * @ORM\Column(type="text", name="content")
@@ -56,8 +56,6 @@ export class Card extends DbIdObject<Card> {
      */
     protected recurrence = ''; // default is 1 day, 2 day 4 day, 1 week, 2 week, 4 week
 
-    protected id: number;
-
     /**
      * @ORM\OneToMany(targetEntity="Response", mappedBy="card", fetch="EXTRA_LAZY", indexBy="user")
      * @ORM\OrderBy({"created" = "DESC"})
@@ -72,11 +70,18 @@ export class Card extends DbIdObject<Card> {
     /**
      * @ORM\Column(type="boolean", name="deleted")
      */
-    protected deleted: boolean | number = false;
 
-    public getId(): number {
-        return this.id;
-    }
+    public addAnswer = (bundle: Answer) => Observable.of(this);
+    public removeAnswer = (bundle: Answer) => Observable.of(this);
+    public getAnswers = () => Observable.of([] as Array<Answer>);
+
+    public addResponse = (bundle: Response) => Observable.of(this);
+    public removeResponse = (bundle: Response) => Observable.of(this);
+    public getResponses = () => Observable.of([] as Array<Response>);
+
+    public setPack = (bundle: Pack) => Observable.of(this);
+    public getPackId = () => 0;
+    public getPack = () => Observable.of(void 0 as Pack);
 
     public getIndex(): Observable<number> {
         return Observable.of(1);
@@ -98,7 +103,7 @@ export class Card extends DbIdObject<Card> {
      * @param correct
      */
     public setCorrect(correct?: Answer): Observable<this> {
-        return this.list('answers', ref => FirebaseObjectFactory<Answer>(ref, Answer))
+        return this.getAnswers()
             .map((a: Array<Answer>) => {
                 return a.map(answer => {
                     if (answer.getValue() === correct.getValue()) {
@@ -129,56 +134,6 @@ export class Card extends DbIdObject<Card> {
         }
         this.content = (typeof newUrl !== 'undefined' ? (newUrl + '\n') : '') + content;
         return this;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
-
-    /**
-     * Set created
-     *
-     * @return Card
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return this.created;
-    }
-
-    /**
-     * Set modified
-     *
-     * @return Card
-     * @param modified
-     */
-    public setModified(modified: Date): this {
-        this.modified = modified;
-
-        return this;
-    }
-
-    /**
-     * Get modified
-     *
-     * @return Date
-     */
-    public getModified(): Date {
-        return this.modified;
     }
 
     /**
@@ -292,115 +247,6 @@ export class Card extends DbIdObject<Card> {
      */
     public getRecurrence(): string {
         return this.recurrence;
-    }
-
-    /**
-     * Set pack
-     *
-     * @return Card
-     * @param pack
-     */
-    public setPack(pack?: Pack): Observable<this> {
-        this.pack_id = pack.getId();
-        return Observable.of(this.$ref.child('pack_id').set(this.pack_id)).map(() => this);
-    }
-
-    public getPackId(): number {
-        return this.pack_id as number;
-    }
-
-    /**
-     * Get pack
-     *
-     * @return Pack
-     */
-    public getPack(): Observable<Pack> {
-        return FirebaseObjectFactory<Pack>(this.$ref.root.child('pack/' + this.pack_id), Pack);
-    }
-
-    /**
-     * Add responses
-     *
-     * @return Card
-     * @param response
-     */
-    public addResponse(response: Response): Observable<this> {
-        return this.add('responses', response);
-    }
-
-    /**
-     * Remove response
-     *
-     * @param response
-     */
-    public removeResponse(response: Response): Observable<this> {
-        return this.remove('responses', response);
-    }
-
-    /**
-     * Get responses
-     *
-     * @return Array<Response>
-     */
-    public getResponses(): Observable<Array<Response>> {
-        return this.list('responses', ref => FirebaseObjectFactory<Response>(ref, Response));
-    }
-
-    /**
-     * Add answers
-     *
-     * @return Card
-     * @param answer
-     */
-    public addAnswer(answer: Answer): Observable<this> {
-        return this.add('answers', answer);
-    }
-
-    /**
-     * Remove answer
-     *
-     * @param answer
-     */
-    public removeAnswer(answer: Answer): Observable<this> {
-        return answer.getResponses()
-            .flatMap(r => {
-                if (r.length > 0) {
-                    this.setDeleted(true);
-                    return Observable.of(this);
-                } else {
-                    return this.remove('answers', answer);
-                }
-            });
-    }
-
-    /**
-     * Get answers
-     *
-     * @return Array<Answer>
-     */
-    public getAnswers(): Observable<Array<Answer>> {
-        return this.list('answers', ref => FirebaseObjectFactory<Answer>(ref, Answer));
-    }
-
-    /**
-     * Set deleted
-     *
-     * @return Card
-     * @param deleted
-     */
-    public setDeleted(deleted: boolean): this {
-        this.deleted = deleted;
-
-        return this;
-    }
-
-    /**
-     * Get deleted
-     *
-     * @return boolean
-     */
-    public getDeleted(): boolean {
-        return this.deleted === true || this.deleted > 0;
     }
 
 }

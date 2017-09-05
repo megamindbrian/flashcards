@@ -1,6 +1,6 @@
 import { User } from './User';
 import { Session } from './Session';
-import { DbIdObject } from './DbIdObject';
+import { DbDeletableObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseObjectFactory } from '../core/database';
 
@@ -12,7 +12,7 @@ import { FirebaseObjectFactory } from '../core/database';
  *     @ORM\Index(name="created_idx", columns={"path", "user_id", "created"})})
  * @ORM\HasLifecycleCallbacks()
  */
-export class Visit extends DbIdObject<Visit> {
+export class Visit extends DbDeletableObject<Visit> {
 
     /**
      * @ORM\ManyToOne(targetEntity="Session", inversedBy="visits")
@@ -54,15 +54,6 @@ export class Visit extends DbIdObject<Visit> {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
-
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
 
     /**
      * Set path
@@ -149,34 +140,13 @@ export class Visit extends DbIdObject<Visit> {
     }
 
     /**
-     * Set created
-     *
-     * @return Visit
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return this.created;
-    }
-
-    /**
      * Set session
      *
      * @return Visit
      * @param session
      */
     public setSession(session?: Session): Observable<this> {
-        this.session_id = session.getId();
+        this.session_id = session.getSessionId();
         return Observable.of(this.$ref.child('session_id').set(this.session_id)).map(() => this);
     }
 

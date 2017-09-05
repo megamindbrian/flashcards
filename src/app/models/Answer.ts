@@ -1,16 +1,17 @@
 import { Card } from './Card';
-import { DbIdObject } from './DbIdObject';
-import { FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2/database';
+import { DbDeletableObject } from './DbIdObject';
+import { FirebaseObjectObservable } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
 import { Response } from './Response';
 import { FirebaseObjectFactory } from '../core/database';
+import { ResponseCollection } from './Factories';
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="answer")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Answer extends DbIdObject<Answer> {
+export class Answer extends DbDeletableObject<Answer> implements ResponseCollection {
     /**
      * @ORM\ManyToOne(targetEntity="Card", inversedBy="answers")
      * @ORM\JoinColumn(name="card_id", referencedColumnName="$key")
@@ -41,36 +42,21 @@ export class Answer extends DbIdObject<Answer> {
      * @ORM\OneToMany(targetEntity="Response", mappedBy="answer")
      * @ORM\OrderBy({"created" = "DESC"})
      */
-    protected responses: FirebaseListObservable<Array<number>>;
 
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
 
     /**
      * @ORM\Column(type="datetime", name="modified", nullable=true)
      */
-    protected modified: Date;
 
     /**
      * @ORM\Column(type="boolean", name="deleted")
      */
-    protected deleted = false;
-
-    protected id: number;
-
-    public getId(): number {
-        return this.id;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
+    addResponse = (bundle: Response) => Observable.of(this);
+    removeResponse = (bundle: Response) => Observable.of(this);
+    getResponses = () => Observable.of([] as Array<Response>);
 
     /**
      * Set content
@@ -142,76 +128,6 @@ export class Answer extends DbIdObject<Answer> {
     }
 
     /**
-     * Set created
-     *
-     * @return Answer
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return this.created;
-    }
-
-    /**
-     * Set modified
-     *
-     * @return Answer
-     * @param modified
-     */
-    public setModified(modified: Date): this {
-        this.modified = modified;
-
-        return this;
-    }
-
-    /**
-     * Get modified
-     *
-     * @return Date
-     */
-    public getModified(): Date {
-        return this.modified;
-    }
-
-    /**
-     * Add responses
-     *
-     * @return Answer
-     * @param response
-     */
-    public addResponse(response: Response): Observable<this> {
-        return this.add('responses', response);
-    }
-
-    /**
-     * Remove responses
-     *
-     * @param response
-     */
-    public removeResponse(response: Response): Observable<this> {
-        return this.remove('responses', response);
-    }
-
-    /**
-     * Get responses
-     *
-     * @return Array<Response>
-     */
-    public getResponses(): Observable<Array<Response>> {
-        return this.list('responses', ref => FirebaseObjectFactory<Response>(ref, Response));
-    }
-
-    /**
      * Set correct
      *
      * @return Answer
@@ -250,26 +166,5 @@ export class Answer extends DbIdObject<Answer> {
      */
     public getCard(): FirebaseObjectObservable<Card> {
         return FirebaseObjectFactory<Card>(this.$ref.root.child('card/' + this.card_id), Card);
-    }
-
-    /**
-     * Set deleted
-     *
-     * @return Answer
-     * @param deleted
-     */
-    public setDeleted(deleted: boolean): this {
-        this.deleted = deleted;
-
-        return this;
-    }
-
-    /**
-     * Get deleted
-     *
-     * @return boolean
-     */
-    public getDeleted(): boolean {
-        return this.deleted;
     }
 }

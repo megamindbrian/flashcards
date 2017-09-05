@@ -16,6 +16,18 @@ md-toolbar /deep/ a, md-toolbar /deep/ button, md-toolbar /deep/ .mat-button {
     color: $light-light-gray;
 }
 
+/deep/ bc-toolbar ~ *:not(bc-footer):not(router-outlet) {
+    padding: 60px;
+    display: flex;
+    min-height: 100%;
+    margin-top: -42px;
+    margin-bottom: -40px;
+}
+
+/deep/ .home bc-toolbar ~ *:not(bc-footer):not(router-outlet) {
+    margin: 0;
+}
+
 /deep/ .home md-toolbar {
     position: fixed;
 }

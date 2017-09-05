@@ -1,4 +1,5 @@
 import {
+    AngularFireDatabase,
     FirebaseListObservable, FirebaseObjectObservable,
     onChildAdded, onChildChanged, onChildRemoved
 } from 'angularfire2/database';
@@ -27,6 +28,10 @@ function firebaseUnwrap<T extends object>(snapshot: DatabaseSnapshot,
         throw e;
     }
 }
+
+// export function user(database: AngularFireDatabase): FirebaseObjectObservable<User> {
+//    getRef(database.app, 'mail')
+// }
 
 export function FirebaseObjectFactory<T extends object>(ref: firebase.database.Reference,
                                                         prototype: any): FirebaseObjectObservable<T> {
@@ -139,9 +144,8 @@ export function FirebaseListFactory<T extends object>(ref: firebase.database.Ref
             });
         };
 
-    });
+    }) as FirebaseListObservable<Array<T>>;
 
 // TODO: should be in the subscription zone instead
 // observeOn.call(listObs, new ZoneScheduler(Zone.current));
 }
-

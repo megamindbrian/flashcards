@@ -23,7 +23,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        // this.database.user('/user/0');
         this.sub = FirebaseObjectFactory<User>(getRef(this.database.app, '/user/0'), User)
+        // TODO: move to User model?
             .flatMap((u: User) => u.getUserPacks())
             .flatMap(ups => Observable
                 .zip(...ups.map(up => up.getRetention()

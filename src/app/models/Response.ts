@@ -2,20 +2,20 @@ import { Card } from './Card';
 import { Answer } from './Answer';
 import { User } from './User';
 import { File } from './File';
-import { DbIdObject } from './DbIdObject';
+import { DbDeletableObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseObjectFactory } from '../core/database';
+
 /**
  * @ORM\Entity
  * @ORM\Table(name="response")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Response extends DbIdObject<Response> {
+export class Response extends DbDeletableObject<Response> {
 
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date | string;
 
     /**
      * @ORM\ManyToOne(targetEntity="Card", inversedBy="responses")
@@ -50,40 +50,6 @@ export class Response extends DbIdObject<Response> {
      * @ORM\Column(type="boolean", name="correct")
      */
     protected correct: boolean;
-
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        if (this.created === null) {
-            this.created = new Date();
-        }
-
-        return this;
-    }
-
-    /**
-     * Set created
-     *
-     * @return Response
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return typeof this.created === 'string'
-            ? (this.created = new Date(this.created))
-            : this.created as Date;
-    }
 
     /**
      * Set value

@@ -1,8 +1,9 @@
-import { DbIdObject } from './DbIdObject';
+import { DbDeletableObject } from './DbIdObject';
+
 /**
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-export class BaseGroup extends DbIdObject<BaseGroup> {
+export class BaseGroup extends DbDeletableObject<BaseGroup> {
 
     /**
      * @var string
@@ -13,7 +14,6 @@ export class BaseGroup extends DbIdObject<BaseGroup> {
      * @var array
      */
     protected roles: Array<string>;
-    protected id: number;
 
     /**
      * {@inheritdoc}
@@ -24,13 +24,6 @@ export class BaseGroup extends DbIdObject<BaseGroup> {
         }
 
         return this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public getId(): number {
-        return this.id;
     }
 
     /**

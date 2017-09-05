@@ -1,14 +1,14 @@
 import { Group } from './Group';
-import { DbIdObject } from './DbIdObject';
+import { DbPropertiesObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseObjectFactory } from '../core/database';
-export class BaseUser extends DbIdObject<BaseUser> {
+import { GroupCollection } from './Factories';
+
+export class BaseUser extends DbPropertiesObject<BaseUser> implements GroupCollection {
     static ROLE_DEFAULT = 'ROLE_USER';
     static ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
     /**
      * @var mixed
      */
-    protected id: number;
 
     /**
      * @var string
@@ -82,9 +82,9 @@ export class BaseUser extends DbIdObject<BaseUser> {
      */
     protected roles: Array<string>;
 
-    public getId(): number {
-        return this.id;
-    }
+    addGroup = (bundle: Group) => Observable.of(this);
+    removeGroup = (bundle: Group) => Observable.of(this);
+    getGroups = () => Observable.of([] as Array<Group>);
 
     /**
      * {@inheritdoc}
@@ -379,13 +379,6 @@ export class BaseUser extends DbIdObject<BaseUser> {
     /**
      * {@inheritdoc}
      */
-    public getGroups(): Observable<Array<Group>> {
-        return this.list('groups', ref => FirebaseObjectFactory<Group>(ref, Group));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public getGroupNames(): Observable<Array<string>> {
         return this.getGroups().map(g => g.map(group => group.getName()));
     }
@@ -395,20 +388,6 @@ export class BaseUser extends DbIdObject<BaseUser> {
      */
     public hasGroup(name: string): Observable<boolean> {
         return this.getGroupNames().map(groups => groups.indexOf(name) > -1);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public addGroup(group: Group): Observable<this> {
-        return this.add('group', group);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public removeGroup(group: Group): Observable<this> {
-        return this.remove('groups', group);
     }
 
     /**

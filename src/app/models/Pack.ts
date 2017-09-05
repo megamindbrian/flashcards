@@ -4,16 +4,20 @@ import { Card } from './Card';
 import { Bundle } from './Bundle';
 import { Group } from './Group';
 import { File } from './File';
-import { DbIdObject } from './DbIdObject';
+import { DbPropertiesObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
+import { FirebaseObjectFactory } from '../core/database';
+import { BundleCollection, GroupCollectionForeignKey, UserCollection, UserPackCollection } from './Factories';
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="pack")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Pack extends DbIdObject<Pack> {
+export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionForeignKey<Pack>,
+                                                              BundleCollection,
+                                                              UserPackCollection,
+                                                              UserCollection {
 
     /**
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="packs")
@@ -44,7 +48,6 @@ export class Pack extends DbIdObject<Pack> {
      */
 
     /** @ORM\Column(name="properties", type="array", nullable=true) */
-    protected properties: { [index: string]: any };
 
     /** @ORM\Column(name="downloads", type="integer") */
     protected downloads = 0;
@@ -97,13 +100,34 @@ export class Pack extends DbIdObject<Pack> {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
 
     /**
      * @ORM\Column(type="datetime", name="modified", nullable=true)
      */
-    protected modified: Date;
-    protected id: number | string;
+
+    public addBundle = (bundle: Bundle) => Observable.of(this);
+    public removeBundle = (bundle: Bundle) => Observable.of(this);
+    public getBundles = () => Observable.of([] as Array<Bundle>);
+
+    public addCard = (bundle: Card) => Observable.of(this);
+    public removeCard = (bundle: Card) => Observable.of(this);
+    public getCards = () => Observable.of([] as Array<Card>);
+
+    public addGroup = (bundle: Group) => Observable.of(this);
+    public removeGroup = (bundle: Group) => Observable.of(this);
+    public getGroups = () => Observable.of([] as Array<Group>);
+
+    public addUserPack = (bundle: UserPack) => Observable.of(this);
+    public removeUserPack = (bundle: UserPack) => Observable.of(this);
+    public getUserPacks = () => Observable.of([] as Array<UserPack>);
+
+    public addUser = (bundle: User) => Observable.of(this);
+    public removeUser = (bundle: User) => Observable.of(this);
+    public getUsers = () => Observable.of([] as Array<User>);
+
+    public setGroup = (bundle: Group) => Observable.of(this);
+    public getGroupId = () => 0;
+    public getGroup = () => Observable.of(void 0 as Group);
 
     public getCreator(): Observable<string> {
         return this.getGroup().map(g => g.getName())
@@ -116,35 +140,10 @@ export class Pack extends DbIdObject<Pack> {
     }
 
     /**
-     * @param prop
-     * @param value
-     */
-    public setProperty(prop: string, value: any): this {
-        if (prop === 'schedule' && typeof value === 'string') {
-            value = new Date(value);
-        }
-        this.properties[ prop ] = value;
-        return this;
-    }
-
-    /**
-     * @param prop
-     * @return null
-     */
-    public getProperty(prop: string): any {
-        if (typeof this.properties[ prop ] !== 'undefined') {
-            if (prop === 'schedule' && typeof this.properties[ prop ] === 'string') {
-                return new Date(this.properties[ prop ]);
-            }
-
-            return this.properties[ prop ];
-        }
-        return;
-    }
-
-    /**
      * @return Array<User>
      */
+
+    /*
     public getUsers(): Observable<Array<User>> {
         const users: Observable<Array<User>> = typeof this.getUser()
         !== 'undefined' ? this.getUser().map(u => [ u ]) : Observable.of([]);
@@ -158,23 +157,19 @@ export class Pack extends DbIdObject<Pack> {
                 return arr.indexOf(elem) === pos;
             }));
     }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
+*/
 
     public getLogo(): Observable<string> {
         if (typeof this.getProperty('logo') !== 'undefined') {
             return Observable.of(this.getProperty('logo') as string);
         }
-        return this.getGroup().map(g => g.getLogo())
+        return this.getGroup()
+            .flatMap((g: Group) => g.getFile())
             .flatMap(is => typeof is !== 'undefined'
                 ? Observable.of(is.getUrl())
-                : this.getUser().flatMap(u => u.getPhoto()).map(f => f.getUrl()));
+                : this.getUser()
+                    .flatMap(u => u.getPhoto())
+                    .map(f => typeof f !== 'undefined' ? f.getUrl() : void 0));
     }
 
     public isNewForChild(c: User): Observable<boolean> {
@@ -262,19 +257,6 @@ export class Pack extends DbIdObject<Pack> {
 
     /**
      * @return UserPack|null
-     * @param user
-     */
-    public getUserPack(user: User): Observable<UserPack> {
-        return this.getUserPacks()
-            .flatMap(ups => Observable.zip(...ups
-                .map((up: UserPack) => up.getUser()
-                    .map(u => ({up, u})))))
-            .map((ups: Array<{ up: UserPack, u: User }>) => ups
-                .filter(({up, u}) => u.getId() === user.getId())[ 0 ].up);
-    }
-
-    /**
-     * @return UserPack|null
      * @param uid
      */
     // public getUserPackById(uid: number): Observable<UserPack> {
@@ -282,33 +264,6 @@ export class Pack extends DbIdObject<Pack> {
     //    return up.getUser().getId() === uid;
     // }).first();
     // }
-
-    /**
-     * Set properties
-     *
-     * @return Pack
-     * @param properties
-     */
-    public setProperties(properties: { [index: string]: any }): this {
-        for (const k in properties) {
-            if (!properties.hasOwnProperty(k)) {
-                continue;
-            }
-            const v = properties[ k ];
-            this.setProperty(k, v);
-        }
-
-        return this;
-    }
-
-    /**
-     * Get properties
-     *
-     * @return array
-     */
-    public getProperties(): { [index: string]: any } {
-        return this.properties;
-    }
 
     /**
      * Set activeFrom
@@ -362,10 +317,6 @@ export class Pack extends DbIdObject<Pack> {
         this.status = status;
 
         return this;
-    }
-
-    public getId(): number {
-        return this.id as number;
     }
 
     /**
@@ -440,68 +391,6 @@ export class Pack extends DbIdObject<Pack> {
         return this.tags;
     }
 
-    /**
-     * Set created
-     *
-     * @return Pack
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return this.created;
-    }
-
-    /**
-     * Set modified
-     *
-     * @return Pack
-     * @param modified
-     */
-    public setModified(modified: Date): this {
-        this.modified = modified;
-
-        return this;
-    }
-
-    /**
-     * Get modified
-     *
-     * @return Date
-     */
-    public getModified(): Date {
-        return this.modified;
-    }
-
-    /**
-     * Set group
-     *
-     * @return Pack
-     * @param group
-     */
-    public setGroup(group?: Group): Observable<this> {
-        this.group_id = typeof group !== 'undefined' ? group.getId() : void 0;
-        return Observable.of(this.$ref.child('group_id').set(this.group_id)).map(() => this);
-    }
-
-    /**
-     * Get group
-     *
-     * @return Group
-     */
-    public getGroup(): Observable<Group> {
-        return FirebaseObjectFactory<Group>(this.$ref.root.child('group/' + this.group_id), Group);
-    }
-
     public getGroupNames(): Observable<Array<string>> {
         return this.getGroups().map(g => g.map((i: Group) => i.getName()));
     }
@@ -513,35 +402,6 @@ export class Pack extends DbIdObject<Pack> {
      */
     public hasGroup(name: string): Observable<boolean> {
         return this.getGroupNames().map(g => g.indexOf(name) > -1);
-    }
-
-    /**
-     * Add groups
-     *
-     * @return this
-     * @param group
-     */
-    public addGroup(group: Group): Observable<this> {
-        return this.add('groups', group);
-    }
-
-    /**
-     * Remove groups
-     *
-     * @return this|\FOS\UserBundle\Model\GroupableInterface|void
-     * @param group
-     */
-    public removeGroup(group: Group): Observable<this> {
-        return this.remove('groups', group);
-    }
-
-    /**
-     * Get groups
-     *
-     * @return Array<Group>
-     */
-    public getGroups(): Observable<Array<Group>> {
-        return this.list('groups', ref => FirebaseObjectFactory<Group>(ref, Group));
     }
 
     /**
@@ -565,29 +425,12 @@ export class Pack extends DbIdObject<Pack> {
     }
 
     /**
-     * Add cards
-     *
-     * @return Pack
-     * @param card
-     */
-    public addCard(card: Card): Observable<this> {
-        return this.add('cards', card);
-    }
-
-    /**
-     * Remove cards
-     *
-     * @param card
-     */
-    public removeCard(card: Card): Observable<this> {
-        return this.remove('cards', card);
-    }
-
-    /**
      * Get cards
      *
      * @return Array<Card>
      */
+
+    /*
     public getCards(): Observable<Array<Card>> {
         return FirebaseListFactory<Card>(this.$ref.root.child('card'), Card)
             .map((cards: Array<Card>) => cards
@@ -597,7 +440,7 @@ export class Pack extends DbIdObject<Pack> {
                 ? []
                 : c.filter((card: Card) => !card.getDeleted()));
     }
-
+*/
     /**
      * Set downloads
      *
@@ -688,83 +531,17 @@ export class Pack extends DbIdObject<Pack> {
      * @return Pack
      * @param userPack
      */
-    public addUserPack(userPack: UserPack): Observable<this> {
-        return this.add('userPacks', userPack);
-        /*
-         return this.userPacks
-         .map(() => this.$ref.child('userPacks').push(userPack))
-         .combineLatest(userPack.getUser(), (ups, upu) => ({ups, upu}))
-         .flatMap(({ups, upu}) => upu.addUserPack(userPack))
-         .map(up => userPack.setRemoved(false))
-         .map(() => this);
-         */
-    }
 
-    /**
-     * Remove userPacks
-     *
-     * @param userPack
+    /*
+public addUserPack(userPack: UserPack): Observable<this> {
+    return this.add('userPacks', userPack);
+     return this.userPacks
+     .map(() => this.$ref.child('userPacks').push(userPack))
+     .combineLatest(userPack.getUser(), (ups, upu) => ({ups, upu}))
+     .flatMap(({ups, upu}) => upu.addUserPack(userPack))
+     .map(up => userPack.setRemoved(false))
+     .map(() => this);
+    }
      */
-    public removeUserPack(userPack: UserPack): Observable<this> {
-        return this.remove('userPacks', userPack);
-    }
 
-    /**
-     * Get userPacks
-     *
-     * @return Array<UserPack>
-     */
-    public getUserPacks(): Observable<Array<UserPack>> {
-        return this.list<UserPack>('userPacks', ref => FirebaseObjectFactory<UserPack>(ref, UserPack));
-    }
-
-    /**
-     * Set deleted
-     *
-     * @return Pack
-     * @param deleted
-     */
-    public setDeleted(deleted: boolean): this {
-        this.setStatus(deleted ? 'DELETED' : 'UNPUBLISHED');
-
-        return this;
-    }
-
-    /**
-     * Get deleted
-     *
-     * @return boolean
-     */
-    public getDeleted(): boolean {
-        return this.getStatus() === 'DELETED';
-    }
-
-    /**
-     * Add bundle
-     *
-     *
-     * @return Pack
-     * @param bundle
-     */
-    public addBundle(bundle: Bundle): Observable<this> {
-        return this.add('bundles', bundle);
-    }
-
-    /**
-     * Remove bundle
-     *
-     * @param bundle
-     */
-    public removeBundle(bundle: Bundle): Observable<this> {
-        return this.remove('bundles', bundle);
-    }
-
-    /**
-     * Get bundles
-     *
-     * @return Array<Bundle>
-     */
-    public getBundles(): Observable<Array<Bundle>> {
-        return this.list<Bundle>('payments', ref => FirebaseObjectFactory<Bundle>(ref, Bundle));
-    }
 }

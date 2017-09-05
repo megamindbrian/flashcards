@@ -1,16 +1,16 @@
 import { Bundle } from './Bundle';
 import { Pack } from './Pack';
 import { User } from './User';
-import { DbIdObject } from './DbIdObject';
-import { FirebaseListObservable } from 'angularfire2/database';
+import { DbDeletableObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
+import { BundleCollection } from './Factories';
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="payment")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Payment extends DbIdObject<Payment> {
+export class Payment extends DbDeletableObject<Payment> implements BundleCollection {
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="payments")
@@ -54,31 +54,24 @@ export class Payment extends DbIdObject<Payment> {
      */
     protected subscription: string;
 
+    addBundle = (bundle: Bundle) => Observable.of(this);
+    removeBundle = (bundle: Bundle) => Observable.of(this);
+    getBundles = () => Observable.of([] as Array<Bundle>);
+
     /**
      * @ORM\ManyToMany(targetEntity="Bundle")
      * @ORM\JoinTable(name="payment_bundle",
      *      joinColumns={@ORM\JoinColumn(name="payment_id", referencedColumnName="$key")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="bundle_id", referencedColumnName="$key")})
      */
-    protected bundles: FirebaseListObservable<Bundle> = new FirebaseListObservable<Bundle>(this.$ref.child('bundles'));
 
     /**
      * @ORM\Column(type="datetime", name="created")
      */
-    protected created: Date;
 
     /**
      * @ORM\Column(type="boolean", name="deleted")
      */
-    protected deleted = false;
-
-    /**
-     * @ORM\PrePersist
-     */
-    public setCreatedValue(): this {
-        this.created = new Date();
-        return this;
-    }
 
     /**
      * Set amount
@@ -207,48 +200,6 @@ export class Payment extends DbIdObject<Payment> {
     }
 
     /**
-     * Set created
-     *
-     * @return Payment
-     * @param created
-     */
-    public setCreated(created: Date): this {
-        this.created = created;
-
-        return this;
-    }
-
-    /**
-     * Get created
-     *
-     * @return Date
-     */
-    public getCreated(): Date {
-        return this.created;
-    }
-
-    /**
-     * Set deleted
-     *
-     * @return Payment
-     * @param deleted
-     */
-    public setDeleted(deleted: boolean): this {
-        this.deleted = deleted;
-
-        return this;
-    }
-
-    /**
-     * Get deleted
-     *
-     * @return boolean
-     */
-    public getDeleted(): boolean {
-        return this.deleted;
-    }
-
-    /**
      * Set user
      *
      * @return Payment
@@ -290,39 +241,4 @@ export class Payment extends DbIdObject<Payment> {
         return this.pack;
     }
 
-    /**
-     * Add bundle
-     *
-     *
-     * @return Payment
-     * @param bundle
-     */
-    public addBundle(bundle: Bundle): this {
-        this.bundles.push(bundle);
-
-        return this;
-    }
-
-    /**
-     * Remove bundle
-     *
-     * @param bundle
-     */
-    public removeBundle(bundle: Bundle): Observable<Bundle> {
-        return this.bundles.map(c => {
-            const key = c.indexOf(bundle);
-            if (key > -1) {
-                this.$ref.child('bundles/' + key).remove();
-            }
-        }).flatMap(() => this.bundles);
-    }
-
-    /**
-     * Get bundles
-     *
-     * @return Array<Bundle>
-     */
-    public getBundles(): FirebaseListObservable<Bundle> {
-        return this.bundles;
-    }
 }
