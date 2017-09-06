@@ -3,10 +3,10 @@ import { Pack } from './Pack';
 import { DbDeletableObject } from './DbIdObject';
 import { Response } from './Response';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
 import { Card } from './Card';
 import 'rxjs/add/operator/combineLatest';
 import 'rxjs/add/observable/zip';
+import { PackCollectionForeignKey, UserCollectionForeignKey } from './Factories';
 
 export class RetentionValue {
     days: number;
@@ -22,7 +22,8 @@ export class RetentionValue {
  *     @ORM\UniqueConstraint(name="username_idx", columns={"user_id","pack_id"})})
  * @ORM\HasLifecycleCallbacks()
  */
-export class UserPack extends DbDeletableObject<UserPack> {
+export class UserPack extends DbDeletableObject<UserPack> implements UserCollectionForeignKey<UserPack>,
+                                                                     PackCollectionForeignKey<UserPack> {
     static INTERVALS = [ 1, 2, 4, 7, 14, 28, 28 * 3, 28 * 6, 7 * 52 ];
 
     /**
@@ -30,14 +31,12 @@ export class UserPack extends DbDeletableObject<UserPack> {
      * @ORM\ManyToOne(targetEntity="User", inversedBy="userPacks", fetch="EXTRA_LAZY")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user_id: number;
 
     /**
      * @ORM\Id
      * @ORM\ManyToOne(targetEntity="Pack", inversedBy="userPacks", fetch="EXTRA_LAZY")
      * @ORM\JoinColumn(name="pack_id", referencedColumnName="$key")
      */
-    protected pack_id: number;
 
     /** @ORM\Column(name="priority", type="decimal") */
     protected priority = 0.0;
@@ -65,7 +64,6 @@ export class UserPack extends DbDeletableObject<UserPack> {
     /**
      * @ORM\Column(type="boolean", name="removed")
      */
-    protected removed: number | boolean = false;
 
     /**
      * cut off time at 3:00 am, this prevents the card from reappearing on the home screen right at midnight
@@ -154,6 +152,14 @@ export class UserPack extends DbDeletableObject<UserPack> {
     private static sortResponse(r1: Response, r2: Response): number {
         return r1.getCreated().getTime() - r2.getCreated().getTime();
     }
+
+    public setUser = (user?: User) => this.setFk<User>('user_id', user);
+    public getUserId = () => this.getFkId<User>('user_id');
+    public getUser = (): Observable<User> => this.getFk<User>('user_id', User);
+
+    public setPack = (pack?: Pack) => this.setFk<Pack>('pack_id', pack);
+    public getPackId = () => this.getFkId<Pack>('pack_id');
+    public getPack = (): Observable<Pack> => this.getFk<Pack>('pack_id', Pack);
 
     /**
      * @return Response[]
@@ -304,77 +310,6 @@ export class UserPack extends DbDeletableObject<UserPack> {
      */
     public getDownloaded(): Date {
         return this.downloaded;
-    }
-
-    /**
-     * Set user
-     *
-     * @return UserPack
-     * @param user
-     */
-    public setUser(user: User): Observable<this> {
-        this.user_id = typeof user !== 'undefined' ? user.getId() : void 0;
-        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
-    }
-
-    public getUserId(): number {
-        return this.user_id;
-    }
-
-    /**
-     * Get user
-     *
-     * @return User
-     */
-    public getUser(): Observable<User> {
-        return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.user_id), User);
-    }
-
-    /**
-     * Set pack
-     *
-     * @return UserPack
-     * @param pack
-     */
-    public setPack(pack: Pack): Observable<this> {
-        this.pack_id = pack.getId();
-        return Observable.of(this.$ref.child('pack_id').set(this.pack_id)).map(() => this);
-    }
-
-    /**
-     * Get pack
-     *
-     * @return Pack
-     */
-    public getPack(): Observable<Pack> {
-        return FirebaseListFactory<Pack>(this.$ref.root.child('pack'), Pack)
-            .map(ups => ups.filter((pack: Pack) => pack.getId() === this.pack_id)[ 0 ]);
-    }
-
-    /**
-     * Set removed
-     *
-     *
-     * @return UserPack
-     * @param removed
-     */
-    public setRemoved(removed: boolean): this {
-        this.removed = removed;
-
-        return this;
-    }
-
-    /**
-     * Get removed
-     *
-     * @return boolean
-     */
-    public getRemoved(): Observable<boolean> {
-        return Observable.of(this.removed === true || this.removed > 0)
-            .flatMap(is => is
-                ? Observable.of(true)
-                : this.getPack().map((p: Pack) => typeof p === 'undefined'
-                    || p === null || p.getStatus() === 'DELETED'));
     }
 
     /**

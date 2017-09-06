@@ -1,7 +1,6 @@
-import { DbIdObject, DbObject } from './DbIdObject';
+import { DbIdObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
 import { Bundle } from './Bundle';
-import { FirebaseObjectFactory } from '../core/database';
 import { Pack } from './Pack';
 import { Answer } from './Answer';
 import { Visit } from './Visit';
@@ -16,18 +15,7 @@ import { Card } from './Card';
 import { File } from './File';
 import { Session } from './Session';
 
-function applyMixins(derivedCtor: any, baseCtors: Array<any>): void {
-    baseCtors.forEach(baseCtor => {
-        Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
-            derivedCtor.prototype[ name ] = baseCtor.prototype[ name ];
-        });
-    });
-}
-
-export class DbCollectionForiegnKey<T> extends DbObject<T> {
-    protected group_id?: number | string;
-    protected file_id?: number | string;
-    protected pack_id?: number | string;
+export abstract class DbCollectionForiegnKey<T> extends DbIdObject {
 }
 
 export class DbCollection<T> extends DbIdObject {
@@ -37,12 +25,10 @@ export class DbCollection<T> extends DbIdObject {
 export class BundleCollection extends DbCollection<Bundle> {
     addBundle = (bundle: Bundle) => this.add('bundles', bundle);
     removeBundle = (bundle: Bundle) => this.remove('bundles', bundle);
-    getBundles = () => this.list<Bundle>('bundles', Bundle);
+    getBundles = (): Observable<Array<Bundle>> => this.list<Bundle>('bundles', 'bundle_id', Bundle);
 }
 
 export class BundleCollectionForiegnKey extends DbCollectionForiegnKey<Bundle> {
-    protected bundle_id: number | string;
-
     getBundleId(): number {
         return typeof this.bundle_id === 'string' ? parseInt(this.bundle_id as string) : this.bundle_id as number;
     }
@@ -51,7 +37,13 @@ export class BundleCollectionForiegnKey extends DbCollectionForiegnKey<Bundle> {
 export class AnswerCollection extends DbCollection<Answer> {
     addAnswer = (bundle: Answer) => this.add('answers', bundle);
     removeAnswer = (bundle: Answer) => this.remove('answers', bundle);
-    getAnswers = () => this.list<Answer>('answers', Answer);
+    getAnswers = (): Observable<Array<Answer>> => this.list<Answer>('answers', 'answer_id', Answer);
+}
+
+export class AnswerCollectionForeignKey<T extends DbIdObject> extends DbCollectionForiegnKey<Answer> {
+    setAnswer = (file?: Answer) => this.setFk<Answer>('answer_id', file);
+    getAnswerId = () => this.getFkId<Answer>('answer_id');
+    getAnswer = (): Observable<Answer> => this.getFk<Answer>('answer_id', Answer);
 }
 
 export class VisitCollection extends DbCollection<Visit> {
@@ -64,7 +56,7 @@ export class VisitCollection extends DbCollection<Visit> {
     }
 
     public getVisits(): Observable<Array<Visit>> {
-        return this.list('visits', Visit);
+        return this.list('visits', 'visit_id', Visit);
     }
 }
 
@@ -78,20 +70,28 @@ export class GroupCollection extends DbCollection<Group> {
     }
 
     public getGroups(): Observable<Array<Group>> {
-        return this.list('groups', Group);
+        return this.list<Group>('groups', 'group_id', Group);
     }
 }
 
 export class GroupCollectionForeignKey<T extends DbIdObject> extends DbCollectionForiegnKey<Group> {
-    setGroup = (group?: Group) => this.setFk<GroupCollectionForeignKey<T>>('group_id', group);
-    getGroupId = () => this.getFkId<GroupCollectionForeignKey<T>>('group_id');
-    getGroup = () => this.getFk<GroupCollectionForeignKey<T>>('group_id', Group);
+    setGroup = (group?: Group) => this.setFk<Group>('group_id', group);
+    getGroupId = () => this.getFkId<Group>('group_id');
+    getGroup = (): Observable<Group> => this.getFk<Group>('group_id', Group);
 }
 
-export class FileCollectionForeignKey<T extends DbIdObject> extends DbCollectionForiegnKey<File> {
-    setFile = (file?: File) => this.setFk<FileCollectionForeignKey<T>>('file_id', file);
-    getFileId = () => this.getFkId<FileCollectionForeignKey<T>>('file_id');
-    getFile = () => this.getFk<FileCollectionForeignKey<T>>('file_id', File);
+export interface FileCollectionForeignKey<T extends DbIdObject> extends DbCollectionForiegnKey<File> {
+    setFile(file?: File): Observable<this>;
+
+    getFileId(): number;
+
+    getFile(): Observable<File>;
+}
+
+export class CardCollectionForeignKey<T extends DbIdObject> extends DbCollectionForiegnKey<Card> {
+    setCard = (card?: Card) => this.setFk<Card>('card_id', card);
+    getCardId = () => this.getFkId<Card>('card_id');
+    getCard = (): Observable<Card> => this.getFk<Card>('card_id', Card);
 }
 
 export class ResponseCollection extends DbCollection<Response> {
@@ -104,22 +104,31 @@ export class ResponseCollection extends DbCollection<Response> {
     }
 
     public getResponses(): Observable<Array<Response>> {
-        return this.list('responses', Response);
+        return this.list('responses', 'response_id', Response);
     }
 }
 
 export class UserPackCollection extends DbCollection<UserPack> {
-    public addUserPack(userpack: UserPack): Observable<this> {
-        return this.add('userPacks', userpack);
+    public addUserPack(userPack: UserPack): Observable<this> {
+        return this.add('userPacks', userPack);
     }
 
-    public removeUserPack(userpack: UserPack): Observable<this> {
-        return this.remove('userPacks', userpack);
+    public removeUserPack(userPack: UserPack): Observable<this> {
+        return this.remove('userPacks', userPack);
     }
 
     public getUserPacks(): Observable<Array<UserPack>> {
-        return this.list<UserPack>('userPacks', UserPack);
+        console.log('hit241234');
+        return this.list('userPacks', 'user_id', UserPack);
     }
+}
+
+export interface UserCollectionForeignKey<T extends DbIdObject> extends DbCollectionForiegnKey<User> {
+    setUser(user?: User): Observable<this>;
+
+    getUserId(): number;
+
+    getUser(): Observable<User>;
 }
 
 export class UserCollection extends DbCollection<User> {
@@ -132,7 +141,7 @@ export class UserCollection extends DbCollection<User> {
     }
 
     public getUsers(): Observable<Array<User>> {
-        return this.list('users', User);
+        return this.list('users', 'user_id', User);
     }
 }
 
@@ -146,7 +155,7 @@ export class InviteCollection extends DbCollection<Invite> {
     }
 
     public getInvites(): Observable<Array<Invite>> {
-        return this.list('invites', Invite);
+        return this.list('invites', 'invite_id', Invite);
     }
 }
 
@@ -160,7 +169,7 @@ export class InviteeCollection extends DbCollection<Invite> {
     }
 
     public getInvitees(): Observable<Array<Invite>> {
-        return this.list('invitees', Invite);
+        return this.list('invitees', 'invitee_id', Invite);
     }
 }
 
@@ -174,14 +183,14 @@ export class PackCollection extends DbCollection<Pack> {
     }
 
     public getPacks(): Observable<Array<Pack>> {
-        return this.list('packs', Pack);
+        return this.list('packs', 'pack_id', Pack);
     }
 }
 
 export class PackCollectionForeignKey<T extends DbIdObject> extends DbCollectionForiegnKey<Pack> {
-    setPack = (pack?: Pack) => this.setFk<PackCollectionForeignKey<T>>('pack_id', pack);
-    getPackId = () => this.getFkId<PackCollectionForeignKey<T>>('pack_id');
-    getPack = () => this.getFk<PackCollectionForeignKey<T>>('pack_id', Pack);
+    setPack = (pack?: Pack) => this.setFk<Pack>('pack_id', pack);
+    getPackId = () => this.getFkId<Pack>('pack_id');
+    getPack = (): Observable<Pack> => this.getFk<Pack>('pack_id', Pack);
 }
 
 export class PaymentCollection extends DbCollection<Payment> {
@@ -194,7 +203,7 @@ export class PaymentCollection extends DbCollection<Payment> {
     }
 
     public getPayments(): Observable<Array<Payment>> {
-        return this.list('payments', Payment);
+        return this.list('payments', 'payment_id', Payment);
     }
 }
 
@@ -208,44 +217,71 @@ export class FileCollection extends DbCollection<File> {
     }
 
     public getFiles(): Observable<Array<File>> {
-        return this.list('files', File);
+        return this.list('files', 'file_id', File);
     }
 }
 
-applyMixins(Answer, [
-    ResponseCollection
-]);
+function applyMixins(derivedCtor: any, baseCtors: Array<any>): void {
+    baseCtors.forEach(baseCtor => {
+        Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+            console.log(name);
+            derivedCtor.prototype[ name ] = baseCtor.prototype[ name ];
+        });
+    });
+}
 
-applyMixins(Bundle, [
-    PackCollection,
-    PaymentCollection
+applyMixins(Answer, [
+    ResponseCollection,
+    CardCollectionForeignKey
 ]);
 
 applyMixins(BaseUser, [
     GroupCollection
 ]);
 
+applyMixins(Bundle, [
+    PackCollection,
+    PaymentCollection,
+    GroupCollectionForeignKey
+]);
+
 applyMixins(Card, [
     AnswerCollection,
-    ResponseCollection
+    ResponseCollection,
+    PackCollectionForeignKey
 ]);
+
+applyMixins(File, []);
 
 applyMixins(Group, [
     BundleCollection,
     UserCollection,
     PackCollection,
     InviteCollection,
-    GroupCollection
+    GroupCollection,
+    GroupCollectionForeignKey
+]);
+
+applyMixins(Invite, [
+    GroupCollectionForeignKey,
+    PackCollectionForeignKey
 ]);
 
 applyMixins(Pack, [
+    GroupCollectionForeignKey,
     BundleCollection,
     UserPackCollection,
     UserCollection
 ]);
 
 applyMixins(Payment, [
-    BundleCollection
+    BundleCollection,
+    PackCollectionForeignKey
+]);
+
+applyMixins(Response, [
+    CardCollectionForeignKey,
+    AnswerCollectionForeignKey
 ]);
 
 applyMixins(Session, [
@@ -262,3 +298,9 @@ applyMixins(User, [
     FileCollection,
     PaymentCollection
 ]);
+
+applyMixins(UserPack, [
+    PackCollectionForeignKey
+]);
+
+applyMixins(Visit, []);

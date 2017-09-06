@@ -1,11 +1,10 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { User } from '../models/User';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { getRef } from 'angularfire2/database/utils';
 import { FirebaseObjectFactory } from '../core/database';
-import { Observable } from 'rxjs/Observable';
-import { Pack } from '../models/Pack';
 import { Subscription } from 'rxjs/Subscription';
+import { Pack } from '../models/Pack';
+import { User } from '../models/User';
 
 @Component({
     selector: 'bc-packs',
@@ -23,9 +22,7 @@ export class PacksComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.sub = FirebaseObjectFactory<User>(getRef(this.database.app, '/user/0'), User)
         // TODO: move to User model?
-            .flatMap((u: User) => u.getUserPacks())
-            .flatMap(ups => Observable
-                .zip(...ups.map(up => up.getPack())))
+            .flatMap((u: User) => u.getAllPacks())
             .subscribe((packs: Array<Pack>) => {
                 this.packs = packs;
                 this.ref.detectChanges();

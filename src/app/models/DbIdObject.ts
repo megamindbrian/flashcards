@@ -1,12 +1,24 @@
 // expose database so objects maintain their own reference code
 import { DatabaseReference } from 'angularfire2/database/interfaces';
 import { Observable } from 'rxjs/Observable';
-import { DbCollectionForiegnKey } from './Factories';
 import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
 
 export class DbIdObject {
     protected created: Date | string;
     protected id: number | string;
+
+    public file_id?: number | string;
+    public group_id?: number | string;
+    public bundle_id?: number | string;
+    public user_id?: number | string;
+    public pack_id?: number | string;
+    public answer_id?: number | string;
+    public response_id?: number | string;
+    public payment_id?: number | string;
+    public invitee_id?: number | string;
+    public invite_id?: number | string;
+    public visit_id?: number | string;
+    public card_id?: number | string;
 
     // TODO: move ORM mapping login to unwrapper function?
     constructor(protected $ref: DatabaseReference,
@@ -21,7 +33,7 @@ export class DbIdObject {
         return typeof this.id === 'string' ? parseInt(this.id as string) : this.id as number;
     }
 
-    protected add<R extends DbObject<R>>(path: string, data: R): Observable<this> {
+    protected add<R extends DbIdObject>(path: string, data: R): Observable<this> {
         return Observable.of(this);
         // return FirebaseListFactory(this.$ref.child(set))
         //    .flatMap(r => r.push(data.$key))
@@ -29,7 +41,7 @@ export class DbIdObject {
 
     }
 
-    protected remove<R extends DbObject<R>>(path: string, data: R): Observable<this> {
+    protected remove<R extends DbIdObject>(path: string, data: R): Observable<this> {
         return Observable.of(this);
         // const list = FirebaseListFactory(this.$ref.child(set));
         // return list
@@ -38,16 +50,16 @@ export class DbIdObject {
 
     }
 
-    protected list<R extends DbObject<R>>(path: string,
-                                          type: any): Observable<Array<R>> {
-        const list = FirebaseListFactory<R>(this.$ref.child(path), type);
-        const rootPath = list.$ref.ref.root.child(path.replace(/s$/i, ''));
-        const foreign;
+    protected list<R extends DbIdObject>(path: string,
+                                         foreign: keyof DbIdObject,
+                                         type: any): Observable<Array<R>> {
+        // const list = FirebaseListFactory<R>(this.$ref.child(path), type);
+        const rootPath = this.$ref.ref.root.child(path);
 
         // TODO: when in admin row or ACL building mode, go the distance
-        return FirebaseListFactory<R>(rootPath, R)
+        return FirebaseListFactory<R>(rootPath, type)
             .map((ups: Array<R>) => ups
-                .filter((up: DbCollectionForiegnKey<R>) => up[ up.foreign ]() === this.getId()));
+                .filter((up: R) => '' + up[ foreign ] === '' + this.getId()));
 
         /*
         // use traditional method of storing a simple list of ids
@@ -59,11 +71,33 @@ export class DbIdObject {
             */
     }
 
+    protected setFk<R extends DbIdObject>(property: keyof DbIdObject, item?: R): Observable<this> {
+        const id = typeof item !== 'undefined' ? item.getId() : void 0;
+        this[ property ] = id;
+        return Observable.of(this.$ref.child(property).set(id)).map(() => this);
+    }
+
+    protected getFkId<R extends DbIdObject>(property: keyof DbIdObject): number {
+        return typeof this[ property ] === 'string' ? parseInt(this[ property ] as string) : this[ property ] as number;
+    }
+
+    protected getFk<R extends DbIdObject>(property: keyof DbIdObject, type: any): Observable<R> {
+        const ref = this.$ref.root.child(('' + property)
+            .replace('_id', ''));
+        return FirebaseListFactory<R>(ref, type)
+            .map((ups: Array<R>) => ups
+                .filter((up: R) => '' + up.getId() === '' + this[ property ])[ 0 ]);
+        /*
+        return FirebaseObjectFactory<R>(
+            this.$ref.root.child(('' + property)
+                .replace('_id', ''))
+                .child('' + this[ property ])
+            , type);
+            */
+    }
 }
 
 export class DbObject<T> extends DbIdObject {
-    [index: string]: any;
-
     protected modified: Date | string;
 
     public getCreated(): Date {
@@ -72,21 +106,6 @@ export class DbObject<T> extends DbIdObject {
 
     public getModified(): Date {
         return typeof this.modified === 'string' ? new Date(this.modified) : this.modified as Date;
-    }
-
-    protected setFk<R extends DbIdObject>(property: keyof R, group?: T): Observable<this> {
-        this[ property ] = typeof group !== 'undefined' ? group.getId() : void 0;
-        return Observable.of(this.$ref.child(property).set(this[ property ])).map(() => this);
-    }
-
-    protected getFkId<R extends DbIdObject>(property: keyof R): number {
-        return typeof this[ property ] === 'string' ? parseInt(this[ property ] as string) : this[ property ] as number;
-    }
-
-    protected getFk<R extends DbIdObject>(property: keyof R, type: any): Observable<R> {
-        return FirebaseObjectFactory<T>(
-            this.$ref.root.child(('' + property).replace('_id', '')).child(this[ property ]),
-            type);
     }
 }
 

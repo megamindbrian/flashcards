@@ -4,37 +4,36 @@ import { Group } from './Group';
 import { DbPropertiesObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseObjectFactory } from '../core/database';
+import { GroupCollectionForeignKey, PackCollectionForeignKey, UserCollectionForeignKey } from './Factories';
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="invite")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Invite extends DbPropertiesObject<Invite> {
+export class Invite extends DbPropertiesObject<Invite> implements GroupCollectionForeignKey<Invite>,
+                                                                  PackCollectionForeignKey<Invite>,
+                                                                  UserCollectionForeignKey<Invite> {
 
     /**
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="invites")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="$key", nullable=true)
      */
-    protected group_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="Pack", inversedBy="invites")
      * @ORM\JoinColumn(name="pack_id", referencedColumnName="$key", nullable=true)
      */
-    protected pack_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="invites")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="invitees")
      * @ORM\JoinColumn(name="invitee_id", referencedColumnName="$key", nullable=true)
      */
-    protected invitee_id: number;
 
     /**
      * @ORM\Column(type="string", length=256, name="firstName")
@@ -71,6 +70,17 @@ export class Invite extends DbPropertiesObject<Invite> {
     protected reminder: Date;
 
     /** @ORM\Column(name="properties", type="array", nullable=true) */
+    setPack = (pack: Pack) => Observable.of(this);
+    getPackId = () => 0;
+    getPack = () => Observable.of(void 0 as Pack);
+
+    setGroup = (bundle: Group) => Observable.of(this);
+    getGroupId = () => 0;
+    getGroup = () => Observable.of(void 0 as Group);
+
+    public setUser = (user?: User) => this.setFk<User>('user_id', user);
+    public getUserId = () => this.getFkId<User>('user_id');
+    public getUser = (): Observable<User> => this.getFk<User>('user_id', User);
 
     /**
      * Set firstName
@@ -196,66 +206,6 @@ export class Invite extends DbPropertiesObject<Invite> {
      */
     public getReminder(): Date {
         return this.reminder;
-    }
-
-    /**
-     * Set group
-     *
-     * @return Invite
-     * @param group
-     */
-    public setGroup(group?: Group): Observable<this> {
-        this.group_id = group.getId();
-        return Observable.of(this.$ref.child('group_id').set(this.group_id)).map(() => this);
-    }
-
-    /**
-     * Get group
-     *
-     * @return Group
-     */
-    public getGroup(): Observable<Group> {
-        return FirebaseObjectFactory<Group>(this.$ref.root.child('group/' + this.group_id), Group);
-    }
-
-    /**
-     * Set user
-     *
-     * @return Invite
-     * @param user
-     */
-    public setUser(user?: User): Observable<this> {
-        this.user_id = user.getId();
-        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
-    }
-
-    /**
-     * Get user
-     *
-     * @return User
-     */
-    public getUser(): Observable<User> {
-        return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.user_id), User);
-    }
-
-    /**
-     * Set pack
-     *
-     * @return Invite
-     * @param pack
-     */
-    public setPack(pack?: Pack): Observable<this> {
-        this.pack_id = pack.getId();
-        return Observable.of(this.$ref.child('pack_id').set(this.pack_id)).map(() => this);
-    }
-
-    /**
-     * Get pack
-     *
-     * @return Pack
-     */
-    public getPack(): Observable<Pack> {
-        return FirebaseObjectFactory<Pack>(this.$ref.root.child('pack/' + this.pack_id), Pack);
     }
 
     /**

@@ -8,7 +8,7 @@ import { Observable } from 'rxjs/Observable';
 import { FirebaseObjectFactory } from '../core/database';
 import 'rxjs/add/operator/combineLatest';
 import {
-    FileCollection,
+    FileCollection, FileCollectionForeignKey,
     InviteCollection, InviteeCollection, PackCollection, PaymentCollection, ResponseCollection, UserPackCollection,
     VisitCollection
 } from './Factories';
@@ -45,6 +45,7 @@ export class User extends BaseUser implements VisitCollection,
                                               UserPackCollection,
                                               PackCollection,
                                               FileCollection,
+                                              FileCollectionForeignKey<User>,
                                               PaymentCollection {
 
     /**
@@ -110,7 +111,6 @@ export class User extends BaseUser implements VisitCollection,
      * @ORM\OneToOne(targetEntity="File")
      * @ORM\JoinColumn(name="file_id", referencedColumnName="$key", nullable = true)
      */
-    protected file_id: number;
 
     /** @ORM\Column(name="devices", type="simple_array", nullable=true) */
     protected devices: Array<string>;
@@ -124,37 +124,41 @@ export class User extends BaseUser implements VisitCollection,
 
     /** @ORM\Column(name="properties", type="array", nullable=true) */
 
-    addInvite = (bundle: Invite) => Observable.of(this);
-    removeInvite = (bundle: Invite) => Observable.of(this);
-    getInvites = () => Observable.of([] as Array<Invite>);
+    public addInvite = (bundle: Invite) => Observable.of(this);
+    public removeInvite = (bundle: Invite) => Observable.of(this);
+    public getInvites = () => Observable.of([] as Array<Invite>);
 
-    addInvitee = (bundle: Invite) => Observable.of(this);
-    removeInvitee = (bundle: Invite) => Observable.of(this);
-    getInvitees = () => Observable.of([] as Array<Invite>);
+    public addInvitee = (bundle: Invite) => Observable.of(this);
+    public removeInvitee = (bundle: Invite) => Observable.of(this);
+    public getInvitees = () => Observable.of([] as Array<Invite>);
 
-    addVisit = (bundle: Visit) => Observable.of(this);
-    removeVisit = (bundle: Visit) => Observable.of(this);
-    getVisits = () => Observable.of([] as Array<Visit>);
+    public addVisit = (bundle: Visit) => Observable.of(this);
+    public removeVisit = (bundle: Visit) => Observable.of(this);
+    public getVisits = () => Observable.of([] as Array<Visit>);
 
-    addResponse = (bundle: Response) => Observable.of(this);
-    removeResponse = (bundle: Response) => Observable.of(this);
-    getResponses = () => Observable.of([] as Array<Response>);
+    public addResponse = (bundle: Response) => Observable.of(this);
+    public removeResponse = (bundle: Response) => Observable.of(this);
+    public getResponses = () => Observable.of([] as Array<Response>);
 
-    addUserPack = (bundle: UserPack) => Observable.of(this);
-    removeUserPack = (bundle: UserPack) => Observable.of(this);
-    getUserPacks = () => Observable.of([] as Array<UserPack>);
+    public addUserPack = (userPack: UserPack) => this.add('userPacks', userPack);
+    public removeUserPack = (userPack: UserPack) => this.remove('userPacks', userPack);
+    public getUserPacks = (): Observable<Array<UserPack>> => this.list('user_pack', 'user_id', UserPack);
 
-    addPack = (bundle: Pack) => Observable.of(this);
-    removePack = (bundle: Pack) => Observable.of(this);
-    getPacks = () => Observable.of([] as Array<Pack>);
+    public addPack = (pack: Pack) => this.add('packs', pack);
+    public removePack = (pack: Pack) => this.remove('packs', pack);
+    public getPacks = (): Observable<Array<Pack>> => this.list('pack', 'user_id', Pack);
 
-    addFile = (bundle: File) => Observable.of(this);
-    removeFile = (bundle: File) => Observable.of(this);
-    getFiles = () => Observable.of([] as Array<File>);
+    public addFile = (bundle: File) => Observable.of(this);
+    public removeFile = (bundle: File) => Observable.of(this);
+    public getFiles = () => Observable.of([] as Array<File>);
 
-    addPayment = (bundle: Payment) => Observable.of(this);
-    removePayment = (bundle: Payment) => Observable.of(this);
-    getPayments = () => Observable.of([] as Array<Payment>);
+    public addPayment = (bundle: Payment) => Observable.of(this);
+    public removePayment = (bundle: Payment) => Observable.of(this);
+    public getPayments = () => Observable.of([] as Array<Payment>);
+
+    public setFile = (file?: File) => this.setFk<File>('file_id', file);
+    public getFileId = () => this.getFkId<File>('file_id');
+    public getFile = (): Observable<File> => this.getFk<File>('file_id', File);
 
     /**
      * @return Invite|User
@@ -214,14 +218,14 @@ export class User extends BaseUser implements VisitCollection,
                 .map(up => up.getPack()
                     .map(p => ({p, up})))))
             .map((ups: Array<{ p: Pack, up: UserPack }>) => ups
-                .filter(({p, up}) => up.getRemoved())
+                .filter(({p, up}) => !up.getDeleted())
                 .map(({p, up}) => p));
         return this.getPacks()
             .combineLatest(userPacks, (packs, ups) => ({packs, ups}))
             .map(({packs, ups}) => packs.concat(ups))
             .map(p => p
                 .filter((elem: Pack, pos: number, arr: Array<Pack>) => {
-                    return arr.indexOf(elem) === pos;
+                    return !elem.getDeleted() && arr.indexOf(elem) === pos;
                 }));
     }
 
@@ -265,29 +269,6 @@ export class User extends BaseUser implements VisitCollection,
      */
     public getLastName(): string {
         return this.last;
-    }
-
-    /**
-     * Set photo
-     *
-     * @return User
-     * @param photo
-     */
-    public setPhoto(photo?: File): Observable<this> {
-        this.file_id = photo.getId();
-        return Observable.of(this.$ref.child('file_id').set(this.file_id)).map(() => this);
-    }
-
-    /**
-     * Get photo
-     *
-     * @return File
-     */
-    public getPhoto(): Observable<File> {
-        if (typeof this.file_id === 'undefined') {
-            return Observable.of(void 0);
-        }
-        return FirebaseObjectFactory<File>(this.$ref.root.child('file/' + this.file_id), File);
     }
 
     /**

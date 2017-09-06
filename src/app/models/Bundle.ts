@@ -4,7 +4,7 @@ import { File } from './File';
 import { Payment } from './Payment';
 import { DbPropertiesObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
-import { GroupCollectionForeignKey, PackCollection, PaymentCollection } from './Factories';
+import { FileCollectionForeignKey, GroupCollectionForeignKey, PackCollection, PaymentCollection } from './Factories';
 
 /**
  * @ORM\Entity
@@ -29,7 +29,6 @@ export class Bundle extends DbPropertiesObject<Bundle> implements GroupCollectio
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="bundles")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="$key", nullable=true)
      */
-    protected group_id: number;
 
     /**
      * @ORM\ManyToMany(targetEntity="Pack")

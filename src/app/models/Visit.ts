@@ -3,6 +3,7 @@ import { Session } from './Session';
 import { DbDeletableObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseObjectFactory } from '../core/database';
+import { UserCollectionForeignKey } from './Factories';
 
 /**
  * @ORM\Entity
@@ -12,7 +13,7 @@ import { FirebaseObjectFactory } from '../core/database';
  *     @ORM\Index(name="created_idx", columns={"path", "user_id", "created"})})
  * @ORM\HasLifecycleCallbacks()
  */
-export class Visit extends DbDeletableObject<Visit> {
+export class Visit extends DbDeletableObject<Visit> implements UserCollectionForeignKey<Visit> {
 
     /**
      * @ORM\ManyToOne(targetEntity="Session", inversedBy="visits")
@@ -24,7 +25,6 @@ export class Visit extends DbDeletableObject<Visit> {
      * @ORM\ManyToOne(targetEntity="User", inversedBy="visits")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key", nullable=true)
      */
-    protected user_id: number;
 
     /**
      * @ORM\Column(type="string", length=256, name="path")
@@ -54,6 +54,9 @@ export class Visit extends DbDeletableObject<Visit> {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
+    public setUser = (user?: User) => this.setFk<User>('user_id', user);
+    public getUserId = () => this.getFkId<User>('user_id');
+    public getUser = (): Observable<User> => this.getFk<User>('user_id', User);
 
     /**
      * Set path
@@ -157,26 +160,6 @@ export class Visit extends DbDeletableObject<Visit> {
      */
     public getSession(): Observable<Session> {
         return FirebaseObjectFactory<Session>(this.$ref.root.child('session/' + this.session_id), Session);
-    }
-
-    /**
-     * Set user
-     *
-     * @return Visit
-     * @param user
-     */
-    public setUser(user?: User): Observable<this> {
-        this.user_id = user.getId();
-        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
-    }
-
-    /**
-     * Get user
-     *
-     * @return User
-     */
-    public getUser(): Observable<User> {
-        return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.user_id), User);
     }
 
     /**

@@ -1,5 +1,9 @@
 @import '../../assets/colors';
 
+:host {
+    flex-direction: column;
+}
+
 bc-pack-row {
     display: block;
     padding: 10px;

@@ -6,8 +6,10 @@ import { Group } from './Group';
 import { File } from './File';
 import { DbPropertiesObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseObjectFactory } from '../core/database';
-import { BundleCollection, GroupCollectionForeignKey, UserCollection, UserPackCollection } from './Factories';
+import {
+    BundleCollection, GroupCollectionForeignKey, UserCollection, UserCollectionForeignKey,
+    UserPackCollection
+} from './Factories';
 
 /**
  * @ORM\Entity
@@ -15,6 +17,7 @@ import { BundleCollection, GroupCollectionForeignKey, UserCollection, UserPackCo
  * @ORM\HasLifecycleCallbacks()
  */
 export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionForeignKey<Pack>,
+                                                              UserCollectionForeignKey<Pack>,
                                                               BundleCollection,
                                                               UserPackCollection,
                                                               UserCollection {
@@ -23,7 +26,6 @@ export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionFor
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="packs")
      * @ORM\JoinColumn(name="group_id", referencedColumnName="$key", nullable=true)
      */
-    protected group_id: number;
 
     /**
      * @ORM\ManyToMany(targetEntity="Group")
@@ -40,7 +42,6 @@ export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionFor
      * @ORM\ManyToOne(targetEntity="User", inversedBy="packs")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key", nullable=true)
      */
-    protected user_id: number;
 
     /**
      * @ORM\OneToMany(targetEntity="UserPack", mappedBy="pack", fetch="EXTRA_LAZY")
@@ -125,9 +126,13 @@ export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionFor
     public removeUser = (bundle: User) => Observable.of(this);
     public getUsers = () => Observable.of([] as Array<User>);
 
-    public setGroup = (bundle: Group) => Observable.of(this);
-    public getGroupId = () => 0;
-    public getGroup = () => Observable.of(void 0 as Group);
+    public setGroup = (group?: Group) => this.setFk<Group>('group_id', group);
+    public getGroupId = () => this.getFkId<Group>('group_id');
+    public getGroup = (): Observable<Group> => this.getFk<Group>('group_id', Group);
+
+    public setUser = (user?: User) => this.setFk<User>('user_id', user);
+    public getUserId = () => this.getFkId<User>('user_id');
+    public getUser = (): Observable<User> => this.getFk<User>('user_id', User);
 
     public getCreator(): Observable<string> {
         return this.getGroup().map(g => g.getName())
@@ -164,12 +169,18 @@ export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionFor
             return Observable.of(this.getProperty('logo') as string);
         }
         return this.getGroup()
-            .flatMap((g: Group) => g.getFile())
+            .flatMap((g: Group) => typeof g !== 'undefined'
+                ? g.getFile()
+                : Observable.of(void 0))
             .flatMap(is => typeof is !== 'undefined'
                 ? Observable.of(is.getUrl())
                 : this.getUser()
-                    .flatMap(u => u.getPhoto())
-                    .map(f => typeof f !== 'undefined' ? f.getUrl() : void 0));
+                    .flatMap((u: User) => typeof u !== 'undefined'
+                        ? u.getFile()
+                        : Observable.of(void 0))
+                    .map(f => typeof f !== 'undefined' ?
+                        f.getUrl()
+                        : void 0));
     }
 
     public isNewForChild(c: User): Observable<boolean> {
@@ -402,26 +413,6 @@ export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionFor
      */
     public hasGroup(name: string): Observable<boolean> {
         return this.getGroupNames().map(g => g.indexOf(name) > -1);
-    }
-
-    /**
-     * Set user
-     *
-     * @return Pack
-     * @param user
-     */
-    public setUser(user?: User): Observable<this> {
-        this.user_id = user.getId();
-        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
-    }
-
-    /**
-     * Get user
-     *
-     * @return User
-     */
-    public getUser(): Observable<User> {
-        return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.user_id), User);
     }
 
     /**

@@ -29,7 +29,10 @@ export class HomeComponent implements OnInit, OnDestroy {
             .flatMap((u: User) => u.getUserPacks())
             .flatMap(ups => Observable
                 .zip(...ups.map(up => up.getRetention()
-                    .map(retention => ({retention: retention.filter(r => r.shouldDisplay), up})))))
+                    .map(retention => ({
+                        retention: retention
+                            .filter(r => r.shouldDisplay), up
+                    })))))
             .map((r: Array<{ retention: Array<RetentionValue>, up: UserPack }>) => r
                 .filter(retention => retention.retention.length > 0))
             .map((r: Array<{ retention: Array<RetentionValue>, up: UserPack }>) => ({

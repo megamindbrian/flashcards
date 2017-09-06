@@ -2,20 +2,19 @@ import { User } from './User';
 import { Response } from './Response';
 import { DbDeletableObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseObjectFactory } from '../core/database';
+import { UserCollectionForeignKey } from './Factories';
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="file")
  * @ORM\HasLifecycleCallbacks()
  */
-export class File extends DbDeletableObject<File> {
+export class File extends DbDeletableObject<File> implements UserCollectionForeignKey<File> {
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="files")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user_id: number;
 
     /**
      * @ORM\OneToOne(targetEntity="Response", mappedBy="file", fetch="EXTRA_LAZY")
@@ -46,6 +45,9 @@ export class File extends DbDeletableObject<File> {
     /**
      * @ORM\Column(type="datetime", name="created")
      */
+    public setUser = (user?: User) => this.setFk<User>('user_id', user);
+    public getUserId = () => this.getFkId<User>('user_id');
+    public getUser = (): Observable<User> => this.getFk<User>('user_id', User);
 
     /**
      * Set uploadId
@@ -108,26 +110,6 @@ export class File extends DbDeletableObject<File> {
      */
     public getParts(): Array<string> {
         return this.parts;
-    }
-
-    /**
-     * Set user
-     *
-     * @return File
-     * @param user
-     */
-    public setUser(user?: User): Observable<this> {
-        this.user_id = user.getId();
-        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
-    }
-
-    /**
-     * Get user
-     *
-     * @return User
-     */
-    public getUser(): Observable<User> {
-        return FirebaseObjectFactory<User>(this.$ref.root.child('pack/' + this.user_id), User);
     }
 
     /**

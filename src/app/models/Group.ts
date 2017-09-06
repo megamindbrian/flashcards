@@ -60,13 +60,11 @@ export class Group extends BaseGroup implements BundleCollection,
      * @ORM\ManyToOne(targetEntity="File")
      * @ORM\JoinColumn(name="file_id", referencedColumnName="$key", nullable = true)
      */
-    protected file_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="Group")
      * @ORM\JoinColumn(name="parent", referencedColumnName="$key", nullable = true)
      */
-    protected group_id: number;
 
     /**
      * @ORM\OneToMany(targetEntity="Group", mappedBy="parent", fetch="EXTRA_LAZY")
@@ -77,33 +75,33 @@ export class Group extends BaseGroup implements BundleCollection,
      * @ORM\Column(type="boolean", name="deleted")
      */
 
-    addBundle = (bundle: Bundle) => Observable.of(this);
-    removeBundle = (bundle: Bundle) => Observable.of(this);
-    getBundles = () => Observable.of([] as Array<Bundle>);
+    public addBundle = (bundle: Bundle) => Observable.of(this);
+    public removeBundle = (bundle: Bundle) => Observable.of(this);
+    public getBundles = () => Observable.of([] as Array<Bundle>);
 
-    addUser = (bundle: User) => Observable.of(this);
-    removeUser = (bundle: User) => Observable.of(this);
-    getUsers = () => Observable.of([] as Array<User>);
+    public addUser = (bundle: User) => Observable.of(this);
+    public removeUser = (bundle: User) => Observable.of(this);
+    public getUsers = () => Observable.of([] as Array<User>);
 
-    addPack = (bundle: Pack) => Observable.of(this);
-    removePack = (bundle: Pack) => Observable.of(this);
-    getPacks = () => Observable.of([] as Array<Pack>);
+    public addPack = (bundle: Pack) => Observable.of(this);
+    public removePack = (bundle: Pack) => Observable.of(this);
+    public getPacks = () => Observable.of([] as Array<Pack>);
 
-    addInvite = (bundle: Invite) => Observable.of(this);
-    removeInvite = (bundle: Invite) => Observable.of(this);
-    getInvites = () => Observable.of([] as Array<Invite>);
+    public addInvite = (bundle: Invite) => Observable.of(this);
+    public removeInvite = (bundle: Invite) => Observable.of(this);
+    public getInvites = () => Observable.of([] as Array<Invite>);
 
-    addGroup = (bundle: Group) => Observable.of(this);
-    removeGroup = (bundle: Group) => Observable.of(this);
-    getGroups = () => Observable.of([] as Array<Group>);
+    public addGroup = (bundle: Group) => Observable.of(this);
+    public removeGroup = (bundle: Group) => Observable.of(this);
+    public getGroups = () => Observable.of([] as Array<Group>);
 
-    setGroup = (bundle: Group) => Observable.of(this);
-    getGroupId = () => 0;
-    getGroup = () => Observable.of(void 0 as Group);
+    public setGroup = (bundle: Group) => Observable.of(this);
+    public getGroupId = () => 0;
+    public getGroup = () => Observable.of(void 0 as Group);
 
-    setFile = (file: File) => Observable.of(this);
-    getFileId = () => 0;
-    getFile = () => Observable.of(void 0 as File);
+    public setFile = (file?: File) => this.setFk<File>('file_id', file);
+    public getFileId = () => this.getFkId<File>('file_id');
+    public getFile = (): Observable<File> => this.getFk<File>('file_id', File);
 
     /**
      * Set description

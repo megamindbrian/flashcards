@@ -3,26 +3,26 @@ import { Pack } from './Pack';
 import { User } from './User';
 import { DbDeletableObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
-import { BundleCollection } from './Factories';
+import { BundleCollection, PackCollectionForeignKey, UserCollectionForeignKey } from './Factories';
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="payment")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Payment extends DbDeletableObject<Payment> implements BundleCollection {
+export class Payment extends DbDeletableObject<Payment> implements BundleCollection,
+                                                                   UserCollectionForeignKey<Payment>,
+                                                                   PackCollectionForeignKey<Payment> {
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="payments")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user: User;
 
     /**
      * @ORM\ManyToOne(targetEntity="Pack", inversedBy="payments")
      * @ORM\JoinColumn(name="pack_id", referencedColumnName="$key", nullable=true)
      */
-    protected pack: Pack;
 
     /**
      * @ORM\Column(type="string", length=12, name="amount")
@@ -54,9 +54,17 @@ export class Payment extends DbDeletableObject<Payment> implements BundleCollect
      */
     protected subscription: string;
 
-    addBundle = (bundle: Bundle) => Observable.of(this);
-    removeBundle = (bundle: Bundle) => Observable.of(this);
-    getBundles = () => Observable.of([] as Array<Bundle>);
+    public addBundle = (bundle: Bundle) => Observable.of(this);
+    public removeBundle = (bundle: Bundle) => Observable.of(this);
+    public getBundles = () => Observable.of([] as Array<Bundle>);
+
+    public setPack = (pack: Pack) => Observable.of(this);
+    public getPackId = () => 0;
+    public getPack = (): Observable<Pack> => Observable.of(void 0 as Pack);
+
+    public setUser = (user?: User) => this.setFk<User>('user_id', user);
+    public getUserId = () => this.getFkId<User>('user_id');
+    public getUser = (): Observable<User> => this.getFk<User>('user_id', User);
 
     /**
      * @ORM\ManyToMany(targetEntity="Bundle")
@@ -198,47 +206,4 @@ export class Payment extends DbDeletableObject<Payment> implements BundleCollect
     public getSubscription(): string {
         return this.subscription;
     }
-
-    /**
-     * Set user
-     *
-     * @return Payment
-     * @param user
-     */
-    public setUser(user?: User): this {
-        this.user = user;
-
-        return this;
-    }
-
-    /**
-     * Get user
-     *
-     * @return User
-     */
-    public getUser(): User {
-        return this.user;
-    }
-
-    /**
-     * Set pack
-     *
-     * @return Payment
-     * @param pack
-     */
-    public setPack(pack?: Pack): this {
-        this.pack = pack;
-
-        return this;
-    }
-
-    /**
-     * Get pack
-     *
-     * @return Pack
-     */
-    public getPack(): Pack {
-        return this.pack;
-    }
-
 }

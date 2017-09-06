@@ -4,14 +4,20 @@ import { User } from './User';
 import { File } from './File';
 import { DbDeletableObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseObjectFactory } from '../core/database';
+import {
+    AnswerCollectionForeignKey, CardCollectionForeignKey, FileCollectionForeignKey,
+    UserCollectionForeignKey
+} from './Factories';
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="response")
  * @ORM\HasLifecycleCallbacks()
  */
-export class Response extends DbDeletableObject<Response> {
+export class Response extends DbDeletableObject<Response> implements UserCollectionForeignKey<Response>,
+                                                                     FileCollectionForeignKey<Response>,
+                                                                     CardCollectionForeignKey<Response>,
+                                                                     AnswerCollectionForeignKey<Response> {
 
     /**
      * @ORM\Column(type="datetime", name="created")
@@ -21,25 +27,21 @@ export class Response extends DbDeletableObject<Response> {
      * @ORM\ManyToOne(targetEntity="Card", inversedBy="responses")
      * @ORM\JoinColumn(name="card_id", referencedColumnName="$key", nullable=true)
      */
-    protected card_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="Answer", inversedBy="responses")
      * @ORM\JoinColumn(name="answer_id", referencedColumnName="$key", nullable=true)
      */
-    protected answer_id: number;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="responses")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="$key")
      */
-    protected user_id: number;
 
     /**
      * @ORM\OneToOne(targetEntity="File", inversedBy="response")
      * @ORM\JoinColumn(name="file_id", referencedColumnName="$key", nullable=true)
      */
-    protected file_id: number;
 
     /**
      * @ORM\Column(type="text", name="value", nullable=true)
@@ -50,6 +52,22 @@ export class Response extends DbDeletableObject<Response> {
      * @ORM\Column(type="boolean", name="correct")
      */
     protected correct: boolean;
+
+    public setUser = (user?: User) => this.setFk<User>('user_id', user);
+    public getUserId = () => this.getFkId<User>('user_id');
+    public getUser = (): Observable<User> => this.getFk<User>('user_id', User);
+
+    public setFile = (file: File) => Observable.of(this);
+    public getFileId = () => 0;
+    public getFile = (): Observable<File> => Observable.of(void 0 as File);
+
+    public setCard = (card: Card) => Observable.of(this);
+    public getCardId = () => 0;
+    public getCard = (): Observable<Card> => Observable.of(void 0 as Card);
+
+    public setAnswer = (answer: Answer) => Observable.of(this);
+    public getAnswerId = () => 0;
+    public getAnswer = (): Observable<Answer> => Observable.of(void 0 as Answer);
 
     /**
      * Set value
@@ -73,70 +91,6 @@ export class Response extends DbDeletableObject<Response> {
     }
 
     /**
-     * Set answer
-     *
-     * @return Response
-     * @param answer
-     */
-    public setAnswer(answer?: Answer): Observable<this> {
-        this.answer_id = answer.getId();
-        return Observable.of(this.$ref.child('answer_id').set(this.answer_id)).map(() => this);
-    }
-
-    /**
-     * Get answer
-     *
-     * @return Answer
-     */
-    public getAnswer(): Observable<Answer> {
-        return FirebaseObjectFactory<Answer>(this.$ref.root.child('answer/' + this.answer_id), Answer);
-    }
-
-    /**
-     * Set user
-     *
-     * @return Response
-     * @param user
-     */
-    public setUser(user?: User): Observable<this> {
-        this.user_id = user.getId();
-        return Observable.of(this.$ref.child('user_id').set(this.user_id)).map(() => this);
-    }
-
-    public getUserId(): number {
-        return this.user_id;
-    }
-
-    /**
-     * Get user
-     *
-     * @return User
-     */
-    public getUser(): Observable<User> {
-        return FirebaseObjectFactory<User>(this.$ref.root.child('user/' + this.user_id), File);
-    }
-
-    /**
-     * Set file
-     *
-     * @return Response
-     * @param file
-     */
-    public setFile(file?: File): Observable<this> {
-        this.file_id = file.getId();
-        return Observable.of(this.$ref.child('file_id').set(this.file_id)).map(() => this);
-    }
-
-    /**
-     * Get file
-     *
-     * @return File
-     */
-    public getFile(): Observable<File> {
-        return FirebaseObjectFactory<File>(this.$ref.root.child('file/' + this.file_id), File);
-    }
-
-    /**
      * Set correct
      *
      * @return Response
@@ -157,27 +111,4 @@ export class Response extends DbDeletableObject<Response> {
         return this.correct;
     }
 
-    /**
-     * Set card
-     *
-     * @return Response
-     * @param card
-     */
-    public setCard(card?: Card): Observable<this> {
-        this.card_id = card.getId();
-        return Observable.of(this.$ref.child('card_id').set(this.card_id)).map(() => this);
-    }
-
-    public getCardId(): number {
-        return this.card_id;
-    }
-
-    /**
-     * Get card
-     *
-     * @return Card
-     */
-    public getCard(): Observable<Card> {
-        return FirebaseObjectFactory<Card>(this.$ref.root.child('card/' + this.card_id), Card);
-    }
 }

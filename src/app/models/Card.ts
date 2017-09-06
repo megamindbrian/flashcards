@@ -21,7 +21,6 @@ export class Card extends DbDeletableObject<Card> implements AnswerCollection,
      * @ORM\ManyToOne(targetEntity="Pack", inversedBy="cards")
      * @ORM\JoinColumn(name="pack_id", referencedColumnName="$key")
      */
-    protected pack_id: number | string;
 
     /**
      * @ORM\Column(type="datetime", name="created")
@@ -79,9 +78,9 @@ export class Card extends DbDeletableObject<Card> implements AnswerCollection,
     public removeResponse = (bundle: Response) => Observable.of(this);
     public getResponses = () => Observable.of([] as Array<Response>);
 
-    public setPack = (bundle: Pack) => Observable.of(this);
+    public setPack = (pack: Pack) => Observable.of(this);
     public getPackId = () => 0;
-    public getPack = () => Observable.of(void 0 as Pack);
+    public getPack = (): Observable<Pack> => Observable.of(void 0 as Pack);
 
     public getIndex(): Observable<number> {
         return Observable.of(1);
