@@ -6,6 +6,7 @@ import { Pack } from '../models/Pack';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { getRef } from 'angularfire2/database/utils';
 import { NavigationEnd, Router } from '@angular/router';
+import 'rxjs/operator/debounce';
 
 @Component({
     selector: 'bc-pack-edit',
@@ -17,7 +18,7 @@ export class PackEditComponent implements OnInit, OnDestroy {
     private sub: Subscription;
     private routerSub: Subscription;
     private packId: number;
-    private pack: Pack;
+    public pack: Pack;
     private cardsSub: Subscription;
 
     constructor(public ref: ChangeDetectorRef,
@@ -40,14 +41,12 @@ export class PackEditComponent implements OnInit, OnDestroy {
             .map((packs: Array<Pack>) => packs.filter(pack => pack.getId() === this.packId)[ 0 ])
             .subscribe(pack => {
                 this.pack = pack;
-                this.ref.detectChanges();
             });
 
         this.cardsSub = FirebaseListFactory<Card>(getRef(this.database.app, '/card'), Card)
             .map((cards: Array<Card>) => cards.filter(card => card.getPackId() === this.packId))
             .subscribe(cards => {
-                this.cards = cards.filter(c => !c.getDeleted());
-                this.ref.detectChanges();
+                this.cards = cards.filter(c => !c.getDeleted()).slice(0, 1);
             });
     }
 
