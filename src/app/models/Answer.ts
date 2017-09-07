@@ -52,9 +52,9 @@ export class Answer extends DbDeletableObject<Answer> implements ResponseCollect
     /**
      * @ORM\Column(type="boolean", name="deleted")
      */
-    public addResponse = (bundle: Response) => Observable.of(this);
-    public removeResponse = (bundle: Response) => Observable.of(this);
-    public getResponses = () => Observable.of([] as Array<Response>);
+    public addResponse = (item: Response) => this.add('responses', item);
+    public removeResponse = (item: Response) => this.remove('responses', item);
+    public getResponses = (): Observable<Array<Response>> => this.list('response', 'answer_id', Response);
 
     public setCard = (card: Card) => Observable.of(this);
     public getCardId = () => 0;

@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { Card } from '../../models/Card';
 
 @Component({
     selector: 'bc-card-edit',
@@ -6,6 +7,8 @@ import { Component, OnInit } from '@angular/core';
     styleUrls: [ './card-edit.component.scss' ]
 })
 export class CardEditComponent implements OnInit {
+
+    @Input() card: Card;
 
     constructor() {
     }

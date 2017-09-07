@@ -12,14 +12,14 @@
                 <input mdInput name="signupEmail" required type="email"
                        placeholder="{{ 'AUTH.LOGIN.EMAIL' | translate }}"
                        maxlength="100"
-                       [ngModel]='user.getEmail()' (ngModelChange)="user.setEmail($event)">
+                       [ngModel]="user.getEmail()" (ngModelChange)="user.setEmail($event)">
             </md-input-container>
             <br/>
             <md-input-container *ngIf="isLogin">
                 <input mdInput name="signupPassword" required type="password" maxlength="25"
                        placeholder="{{ 'AUTH.LOGIN.PASSWORD' | translate }}"
                        length="40"
-                       [ngModel]='user.getPassword()' (ngModelChange)="user.setPassword($event)">
+                       [ngModel]="user.getPassword()" (ngModelChange)="user.setPassword($event)">
             </md-input-container>
             <bc-register-form *ngIf="isRegister"
                               [user]="user"></bc-register-form>

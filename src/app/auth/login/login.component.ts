@@ -3,6 +3,8 @@ import { AfterViewInit, ChangeDetectorRef, Component, Inject, Optional } from '@
 import { Router } from '@angular/router';
 import { MD_DIALOG_DATA, MdDialog } from '@angular/material';
 import { User } from '../../models/User';
+import { AngularFireAuth } from 'angularfire2/auth';
+import * as firebase from 'firebase/app';
 
 @Component({
     selector: 'bc-login-page',
@@ -19,6 +21,7 @@ export class LoginComponent implements AfterViewInit {
     constructor(public router: Router,
                 public ref: ChangeDetectorRef,
                 public dialog: MdDialog,
+                public fireAuth: AngularFireAuth,
                 @Optional() @Inject(MD_DIALOG_DATA) public data?: any) {
         if (this.router.url.indexOf('register') > -1) {
             this.isRegister = true;
@@ -40,11 +43,32 @@ export class LoginComponent implements AfterViewInit {
     }
 
     onRegister(): void {
-
+        this.fireAuth.auth.createUserWithEmailAndPassword(
+            this.user.getUsername(),
+            this.user.getPlainPassword());
+        this.dialog.closeAll();
     }
 
     onLogin(): void {
+        try {
+            this.fireAuth.auth.signInWithEmailAndPassword(this.user.getUsername(), this.user.getPlainPassword())
+                .then(() => this.dialog.closeAll())
+                .catch(e => this.communicateError('Error logging in: ' + e.toString()));
+        } catch (e) {
+            this.communicateError('Error logging in: ' + e.toString());
+        }
+    }
 
+    loginGoogle(): void {
+        this.fireAuth.auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
+    }
+
+    loginTwitter(): void {
+        this.fireAuth.auth.signInWithRedirect(new firebase.auth.TwitterAuthProvider());
+    }
+
+    loginFacebook(): void {
+        this.fireAuth.auth.signInWithRedirect(new firebase.auth.FacebookAuthProvider());
     }
 
     private communicateError(msg: string): void {

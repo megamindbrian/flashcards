@@ -37,11 +37,10 @@ describe('ResetPasswordComponent', () => {
     it('should reset user Password', done => {
         const navigateSpy = spyOn((<any>comp).router, 'navigate');
         fixture.whenStable().then(() => {
-            comp.onNext();
+            comp.resetPassword();
             expect(navigateSpy).toHaveBeenCalledWith([ '/' ]);
             done();
         });
     });
 
 });
-

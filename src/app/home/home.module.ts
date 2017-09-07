@@ -10,7 +10,7 @@ import { routing } from './home.routing';
         routing
     ],
     declarations: [ HomeComponent, SummaryRowComponent ],
-    providers: [ ]
+    providers: []
 })
 export class HomeModule {
 }

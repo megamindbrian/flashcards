@@ -205,7 +205,11 @@ export class UserPack extends DbDeletableObject<UserPack> implements UserCollect
         return this.getPack()
             .combineLatest(this.getUser(), (pack, user) => ({pack, user}))
             // collect cards
-            .flatMap(({pack, user}) => pack.getCards().map(cards => ({cards, pack, user})))
+            .flatMap(({pack, user}) => pack.getCards().map(cards => ({
+                cards: cards.filter(c => !c.getDeleted()),
+                pack,
+                user
+            })))
             // collect pack responses
             .flatMap(({cards, pack, user}: { cards: Array<Card>, pack: Pack, user: User }) => {
                 if (pack.getId() + '' === '5') {

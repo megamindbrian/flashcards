@@ -1,0 +1,74 @@
+@import '../../assets/colors';
+
+.tricky-select /deep/ .mat-input-underline {
+    display: none;
+}
+
+:host {
+    flex-direction: column;
+}
+
+.edit-wrapper {
+    display: flex;
+    margin: -20px -60px 0;
+    padding: 20px 60px 40px;
+    background: $light-light-gray;
+}
+
+form {
+    display: flex;
+    position: relative;
+    z-index: 1;
+}
+
+header {
+    position: absolute;
+    height: 100%;
+    left: -200px;
+    z-index: -1;
+}
+
+label {
+}
+
+md-input-container {
+    padding-right: 215px;
+}
+
+form,
+header {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    padding-left: 215px;
+}
+
+form > *,
+header > * {
+    flex-basis: 50%;
+}
+
+.pack-icon {
+    max-width: 200px;
+    justify-content: center;
+    align-items: center;
+    max-height: 150px;
+
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+.cards-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+img {
+    height: auto;
+    max-height: 100%;
+    max-width: 100%;
+}

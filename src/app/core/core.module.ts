@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import {
     MdButtonModule, MdCardModule, MdCheckboxModule, MdDialogModule, MdIconModule, MdInputModule,
     MdMenuModule,
-    MdOptionModule, MdProgressSpinnerModule, MdSelectionModule, MdSelectModule,
+    MdOptionModule, MdProgressSpinnerModule, MdRadioModule, MdSelectionModule, MdSelectModule,
     MdSidenavModule,
     MdToolbarModule, MdTooltipModule, OverlayModule,
     PlatformModule
@@ -25,6 +25,7 @@ export const materialModules: Array<any> = [
     OverlayModule,
     MdInputModule,
     MdOptionModule,
+    MdRadioModule,
     MdButtonModule,
     MdSelectModule,
     MdSelectionModule,

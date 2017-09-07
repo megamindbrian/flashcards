@@ -54,13 +54,13 @@ export class Payment extends DbDeletableObject<Payment> implements BundleCollect
      */
     protected subscription: string;
 
-    public addBundle = (bundle: Bundle) => Observable.of(this);
-    public removeBundle = (bundle: Bundle) => Observable.of(this);
-    public getBundles = () => Observable.of([] as Array<Bundle>);
+    public addBundle = (item: Bundle) => this.add('bundles', item);
+    public removeBundle = (item: Bundle) => this.remove('bundles', item);
+    public getBundles = (): Observable<Array<Bundle>> => this.list('bundle', 'payment_id', Bundle);
 
-    public setPack = (pack: Pack) => Observable.of(this);
-    public getPackId = () => 0;
-    public getPack = (): Observable<Pack> => Observable.of(void 0 as Pack);
+    public setPack = (item?: Pack) => this.setFk<Pack>('pack_id', item);
+    public getPackId = () => this.getFkId<Pack>('pack_id');
+    public getPack = (): Observable<Pack> => this.getFk<Pack>('pack_id', Pack);
 
     public setUser = (user?: User) => this.setFk<User>('user_id', user);
     public getUserId = () => this.getFkId<User>('user_id');

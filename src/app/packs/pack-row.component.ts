@@ -20,15 +20,17 @@ export class PackRowComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.sub = this.pack.getCards()
-            .map(cards => ({firstCard: cards.length > 0 ? cards[ 0 ].getId() : void 0, count: cards.length}))
-            .subscribe(({firstCard, count}: { count: number, firstCard: number }) => {
-                this.cardCount = count;
-                this.firstCard = firstCard;
+            .subscribe(all => {
+                const cards = all.filter(c => !c.getDeleted());
+                this.cardCount = cards.length;
+                this.firstCard = cards.length > 0
+                    ? cards[ 0 ].getId()
+                    : void 0;
                 this.ref.detectChanges();
             });
         this.logoSub = this.pack.getLogo()
             .subscribe((logo: string) => {
-                this.logo = logo;
+                this.logo = logo || '/assets/upload_image.png';
                 this.ref.detectChanges();
             });
     }

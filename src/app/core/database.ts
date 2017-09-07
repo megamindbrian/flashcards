@@ -16,6 +16,7 @@ function firebaseUnwrap<T extends object>(snapshot: DatabaseSnapshot,
             $value: unwrapped
         };
     }
+    console.log('hit');
     const prototype = typeof type.constructor !== 'undefined' ? type : Object.getPrototypeOf(type).constructor;
     try {
         const result = new prototype(

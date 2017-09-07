@@ -70,3 +70,8 @@ h2 > *:last-child {
     right: 0;
     z-index: 100;
 }
+
+/deep/ bc-toolbar ~ bc-home {
+    max-height: 100%;
+    height: 100%;
+}

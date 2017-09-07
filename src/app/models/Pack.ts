@@ -106,25 +106,25 @@ export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionFor
      * @ORM\Column(type="datetime", name="modified", nullable=true)
      */
 
-    public addBundle = (bundle: Bundle) => Observable.of(this);
-    public removeBundle = (bundle: Bundle) => Observable.of(this);
-    public getBundles = () => Observable.of([] as Array<Bundle>);
+    public addBundle = (item: Bundle) => this.add('bundles', item);
+    public removeBundle = (item: Bundle) => this.remove('bundles', item);
+    public getBundles = (): Observable<Array<Bundle>> => this.list('bundle', 'pack_id', Bundle);
 
-    public addCard = (bundle: Card) => Observable.of(this);
-    public removeCard = (bundle: Card) => Observable.of(this);
-    public getCards = () => Observable.of([] as Array<Card>);
+    public addCard = (item: Card) => this.add('cards', item);
+    public removeCard = (item: Card) => this.remove('cards', item);
+    public getCards = (): Observable<Array<Card>> => this.list('card', 'pack_id', Card);
 
-    public addGroup = (bundle: Group) => Observable.of(this);
-    public removeGroup = (bundle: Group) => Observable.of(this);
-    public getGroups = () => Observable.of([] as Array<Group>);
+    public addGroup = (item: Group) => this.add('groups', item);
+    public removeGroup = (item: Group) => this.remove('groups', item);
+    public getGroups = (): Observable<Array<Group>> => this.list('group', 'pack_id', Group);
 
-    public addUserPack = (bundle: UserPack) => Observable.of(this);
-    public removeUserPack = (bundle: UserPack) => Observable.of(this);
-    public getUserPacks = () => Observable.of([] as Array<UserPack>);
+    public addUserPack = (item: UserPack) => this.add('userPacks', item);
+    public removeUserPack = (item: UserPack) => this.remove('userPacks', item);
+    public getUserPacks = (): Observable<Array<UserPack>> => this.list('user_pack', 'pack_id', UserPack);
 
-    public addUser = (bundle: User) => Observable.of(this);
-    public removeUser = (bundle: User) => Observable.of(this);
-    public getUsers = () => Observable.of([] as Array<User>);
+    public addUser = (item: User) => this.add('users', item);
+    public removeUser = (item: User) => this.remove('users', item);
+    public getUsers = (): Observable<Array<User>> => this.list('user', 'pack_id', User);
 
     public setGroup = (group?: Group) => this.setFk<Group>('group_id', group);
     public getGroupId = () => this.getFkId<Group>('group_id');

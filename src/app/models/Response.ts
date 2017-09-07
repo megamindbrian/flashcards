@@ -57,17 +57,17 @@ export class Response extends DbDeletableObject<Response> implements UserCollect
     public getUserId = () => this.getFkId<User>('user_id');
     public getUser = (): Observable<User> => this.getFk<User>('user_id', User);
 
-    public setFile = (file: File) => Observable.of(this);
-    public getFileId = () => 0;
-    public getFile = (): Observable<File> => Observable.of(void 0 as File);
+    public setFile = (item?: File) => this.setFk<File>('file_id', item);
+    public getFileId = () => this.getFkId<File>('file_id');
+    public getFile = (): Observable<File> => this.getFk<File>('file_id', File);
 
-    public setCard = (card: Card) => Observable.of(this);
-    public getCardId = () => 0;
-    public getCard = (): Observable<Card> => Observable.of(void 0 as Card);
+    public setCard = (item?: Card) => this.setFk<Card>('card_id', item);
+    public getCardId = () => this.getFkId<Card>('card_id');
+    public getCard = (): Observable<Card> => this.getFk<Card>('card_id', Card);
 
-    public setAnswer = (answer: Answer) => Observable.of(this);
-    public getAnswerId = () => 0;
-    public getAnswer = (): Observable<Answer> => Observable.of(void 0 as Answer);
+    public setAnswer = (item?: Answer) => this.setFk<Answer>('answer_id', item);
+    public getAnswerId = () => this.getFkId<Answer>('answer_id');
+    public getAnswer = (): Observable<Answer> => this.getFk<Answer>('answer_id', Answer);
 
     /**
      * Set value

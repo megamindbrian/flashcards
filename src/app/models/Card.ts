@@ -70,17 +70,17 @@ export class Card extends DbDeletableObject<Card> implements AnswerCollection,
      * @ORM\Column(type="boolean", name="deleted")
      */
 
-    public addAnswer = (bundle: Answer) => Observable.of(this);
-    public removeAnswer = (bundle: Answer) => Observable.of(this);
+    public addAnswer = (item: Answer) => this.add('answers', item);
+    public removeAnswer = (item: Answer) => this.remove('answers', item);
     public getAnswers = () => Observable.of([] as Array<Answer>);
 
-    public addResponse = (bundle: Response) => Observable.of(this);
-    public removeResponse = (bundle: Response) => Observable.of(this);
+    public addResponse = (item: Response) => this.add('responses', item);
+    public removeResponse = (item: Response) => this.remove('responses', item);
     public getResponses = () => Observable.of([] as Array<Response>);
 
-    public setPack = (pack: Pack) => Observable.of(this);
-    public getPackId = () => 0;
-    public getPack = (): Observable<Pack> => Observable.of(void 0 as Pack);
+    public setPack = (item?: Pack) => this.setFk<Pack>('pack_id', item);
+    public getPackId = () => this.getFkId<Pack>('pack_id');
+    public getPack = (): Observable<Pack> => this.getFk<Pack>('pack_id', Pack);
 
     public getIndex(): Observable<number> {
         return Observable.of(1);

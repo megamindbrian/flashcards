@@ -5,7 +5,6 @@ import { BaseUser } from './BaseUser';
 import { Response } from './Response';
 import { File } from './File';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseObjectFactory } from '../core/database';
 import 'rxjs/add/operator/combineLatest';
 import {
     FileCollection, FileCollectionForeignKey,
@@ -124,21 +123,21 @@ export class User extends BaseUser implements VisitCollection,
 
     /** @ORM\Column(name="properties", type="array", nullable=true) */
 
-    public addInvite = (bundle: Invite) => Observable.of(this);
-    public removeInvite = (bundle: Invite) => Observable.of(this);
-    public getInvites = () => Observable.of([] as Array<Invite>);
+    public addInvite = (item: Invite) => this.add('invites', item);
+    public removeInvite = (item: Invite) => this.remove('invites', item);
+    public getInvites = (): Observable<Array<Invite>> => this.list('invite', 'user_id', Invite);
 
-    public addInvitee = (bundle: Invite) => Observable.of(this);
-    public removeInvitee = (bundle: Invite) => Observable.of(this);
-    public getInvitees = () => Observable.of([] as Array<Invite>);
+    public addInvitee = (item: Invite) => this.add('invitees', item);
+    public removeInvitee = (item: Invite) => this.remove('invitees', item);
+    public getInvitees = (): Observable<Array<Invite>> => this.list('invite', 'invitee_id', Invite);
 
-    public addVisit = (bundle: Visit) => Observable.of(this);
-    public removeVisit = (bundle: Visit) => Observable.of(this);
-    public getVisits = () => Observable.of([] as Array<Visit>);
+    public addVisit = (item: Visit) => this.add('visits', item);
+    public removeVisit = (item: Visit) => this.remove('visits', item);
+    public getVisits = (): Observable<Array<Visit>> => this.list('visit', 'user_id', Visit);
 
-    public addResponse = (bundle: Response) => Observable.of(this);
-    public removeResponse = (bundle: Response) => Observable.of(this);
-    public getResponses = () => Observable.of([] as Array<Response>);
+    public addResponse = (item: Response) => this.add('responses', item);
+    public removeResponse = (item: Response) => this.remove('responses', item);
+    public getResponses = (): Observable<Array<Response>> => this.list('response', 'user_id', Response);
 
     public addUserPack = (userPack: UserPack) => this.add('userPacks', userPack);
     public removeUserPack = (userPack: UserPack) => this.remove('userPacks', userPack);
@@ -148,13 +147,13 @@ export class User extends BaseUser implements VisitCollection,
     public removePack = (pack: Pack) => this.remove('packs', pack);
     public getPacks = (): Observable<Array<Pack>> => this.list('pack', 'user_id', Pack);
 
-    public addFile = (bundle: File) => Observable.of(this);
-    public removeFile = (bundle: File) => Observable.of(this);
-    public getFiles = () => Observable.of([] as Array<File>);
+    public addFile = (item: File) => this.add('files', item);
+    public removeFile = (item: File) => this.remove('files', item);
+    public getFiles = (): Observable<Array<File>> => this.list('file', 'user_id', File);
 
-    public addPayment = (bundle: Payment) => Observable.of(this);
-    public removePayment = (bundle: Payment) => Observable.of(this);
-    public getPayments = () => Observable.of([] as Array<Payment>);
+    public addPayment = (item: Payment) => this.add('payments', item);
+    public removePayment = (item: Payment) => this.remove('payments', item);
+    public getPayments = (): Observable<Array<Payment>> => this.list('payment', 'user_id', Payment);
 
     public setFile = (file?: File) => this.setFk<File>('file_id', file);
     public getFileId = () => this.getFkId<File>('file_id');
