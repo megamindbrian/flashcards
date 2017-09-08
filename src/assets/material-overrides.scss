@@ -96,9 +96,12 @@ body {
         max-width: 1000px;
     }
 
+    md-select, .mat-input-wrapper {
+        width: 100%;
+    }
+
     md-select, .mat-input-container {
         padding: 1px;
-        width: 100%;
         text-align: left;
     }
 

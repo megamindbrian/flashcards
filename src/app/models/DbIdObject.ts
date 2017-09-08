@@ -1,7 +1,7 @@
 // expose database so objects maintain their own reference code
 import { DatabaseReference } from 'angularfire2/database/interfaces';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
+import { FirebaseListFactory } from 'angularfire2/database';
 
 export class DbIdObject {
     protected created: Date | string;
@@ -57,7 +57,7 @@ export class DbIdObject {
         const rootPath = this.$ref.ref.root.child(path);
 
         // TODO: when in admin row or ACL building mode, go the distance
-        return FirebaseListFactory<R>(rootPath, type)
+        return FirebaseListFactory(rootPath)
             .map((ups: Array<R>) => ups
                 .filter((up: R) => '' + up[ foreign ] === '' + this.getId()));
 
@@ -84,7 +84,7 @@ export class DbIdObject {
     protected getFk<R extends DbIdObject>(property: keyof DbIdObject, type: any): Observable<R> {
         const ref = this.$ref.root.child(('' + property)
             .replace('_id', ''));
-        return FirebaseListFactory<R>(ref, type)
+        return FirebaseListFactory(ref)
             .map((ups: Array<R>) => ups
                 .filter((up: R) => '' + up.getId() === '' + this[ property ])[ 0 ]);
         /*
