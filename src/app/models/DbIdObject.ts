@@ -2,12 +2,15 @@
 import { DatabaseReference } from 'angularfire2/database/interfaces';
 import { Observable } from 'rxjs/Observable';
 import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
+import { Subscription } from 'rxjs/Subscription';
 
 export class DbIdObject {
     static REBUILD_INDEX = false;
-
+    static lists: {
+        [index: string]: Array<any>;
+    } = {};
     static factories: {
-        [index: string]: Observable<Array<any>>;
+        [index: string]: Promise<Array<any>>;
     } = {};
 
     [index: string]: any;
@@ -71,18 +74,28 @@ export class DbIdObject {
             return Observable.zip(...this[ key ].map((rid: string) =>
                 FirebaseObjectFactory<R>(rootPath.child(rid), type)));
         }
+
         // look up IDs out of the entire list of entities
-        let results: Array<R> = [];
-        return (typeof DbIdObject.factories[ '' + type ] !== 'undefined'
-            ? DbIdObject.factories[ '' + type ]
-            : (DbIdObject.factories[ '' + type ] = FirebaseListFactory<R>(rootPath, type)))
-            .flatMap((ups: Array<R>) => {
-                results = ups
-                    .filter((up: R) => '' + up[ foreign ] === '' + id)
-                    .map((result: any) => result as R);
-                this[ key ] = results.map((up: R) => up.$key);
-                return this.$ref.child(key).set(results.map((up: R) => up.$key));
-            })
+        console.log('' + key);
+        if (typeof DbIdObject.factories[ '' + key ] === 'undefined') {
+            if (typeof DbIdObject.lists[ key ] !== 'undefined') {
+                DbIdObject.factories[ key ] = Promise.resolve(DbIdObject.lists[ key ]);
+            }
+            DbIdObject.factories[ '' + key ] = new Promise(resolve => {
+                return FirebaseListFactory<R>(rootPath, type)
+                    .subscribe(r => {
+                        resolve((DbIdObject.lists[ key ] = r));
+                    });
+            });
+        }
+        let results: Array<R>;
+        return Observable.of([])
+            .flatMap(() => DbIdObject.factories[ '' + key ])
+            .map(() => DbIdObject.lists[ '' + key ])
+            .map(r => (results = r
+                .filter((up: R) => '' + up[ foreign ] === '' + id)
+                .map((result: any) => result as R)))
+            .flatMap(() => this.$ref.child(key).set(results.map((up: R) => up.$key)))
             .map(() => results);
     }
 
@@ -100,21 +113,31 @@ export class DbIdObject {
         if (typeof this[ property ] === 'undefined' || this[ property ] === null) {
             return Observable.of(void 0);
         }
-        const ref = this.$ref.root.child(('' + property)
+        const rootPath = this.$ref.root.child(('' + property)
             .replace('_id', ''));
         const key = ('' + property).replace('_id', '') + '_fk';
         if (typeof this[ key ] !== 'undefined' && this[ key ] !== null) {
-            return FirebaseObjectFactory<R>(ref.child(this[ key ]), type);
+            return FirebaseObjectFactory<R>(rootPath.child(this[ key ]), type);
+        }
+
+        if (typeof DbIdObject.factories[ '' + key ] === 'undefined') {
+            if (typeof DbIdObject.lists[ key ] !== 'undefined') {
+                DbIdObject.factories[ key ] = Promise.resolve(DbIdObject.lists[ key ]);
+            }
+            DbIdObject.factories[ '' + key ] = new Promise(resolve => {
+                return FirebaseListFactory<R>(rootPath, type)
+                    .subscribe(r => {
+                        resolve((DbIdObject.lists[ key ] = r));
+                    });
+            });
         }
         let result: R;
-        return (typeof DbIdObject.factories[ '' + type ] !== 'undefined'
-            ? DbIdObject.factories[ '' + type ]
-            : (DbIdObject.factories[ '' + type ] = FirebaseListFactory<R>(ref, type)))
-            .flatMap((ups: Array<R>) => {
-                result = ups
-                    .filter((up: R) => '' + up.getId() === '' + this[ property ])[ 0 ];
-                return this.$ref.child(key).set(result.$key);
-            })
+        return Observable.of([])
+            .flatMap(() => DbIdObject.factories[ '' + key ])
+            .map(() => DbIdObject.lists[ '' + key ])
+            .map(r => (result = r
+                .filter((up: R) => '' + up.getId() === '' + this[ property ])[ 0 ]))
+            .flatMap(() => this.$ref.child(key).set(result.$key))
             .map(() => result);
     }
 }
