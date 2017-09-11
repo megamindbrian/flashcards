@@ -213,15 +213,14 @@ export class User extends BaseUser implements VisitCollection,
      */
     public getAllPacks(): Observable<Array<Pack>> {
         const userPacks = this.getUserPacks()
-            .flatMap(ups => Observable.zip(...ups
+            .flatMap((ups: Array<UserPack>) => Observable.zip(...ups
                 .map(up => up.getPack()
                     .map(p => ({p, up})))))
             .map((ups: Array<{ p: Pack, up: UserPack }>) => ups
-                .filter(({p, up}) => !up.getDeleted())
+                .filter(({p, up}) => !p.getDeleted() && !up.getDeleted())
                 .map(({p, up}) => p));
-        return this.getPacks()
-            .combineLatest(userPacks, (packs, ups) => ({packs, ups}))
-            .map(({packs, ups}) => packs.concat(ups))
+        return Observable.zip(this.getPacks(), userPacks)
+            .map(ps => [].concat(...ps))
             .map(p => p
                 .filter((elem: Pack, pos: number, arr: Array<Pack>) => {
                     return !elem.getDeleted() && arr.indexOf(elem) === pos;
@@ -291,39 +290,6 @@ export class User extends BaseUser implements VisitCollection,
         return this.last_visit;
     }
 
-    /**
-     * Get responses
-     *
-     * @return Array<Response>
-     */
-
-    /*
-    public getResponses(): Observable<Array<Response>> {
-        return FirebaseListFactory<Response>(this.$ref.root.child('response'), Response)
-            .map((responses: Array<Response>) => responses
-                .filter((response: Response) => response.getUserId() === this.getId()));
-        // this.list('responses', ref => FirebaseObjectFactory(ref, Response));
-    }
-*/
-
-    /**
-     * Get userPacks
-     *
-     * @return Array<UserPack>
-     */
-
-    /*
-    public getUserPacks(): Observable<Array<UserPack>> {
-        return FirebaseListFactory<UserPack>(this.$ref.root.child('user_pack'), UserPack)
-            .map((ups: Array<UserPack>) => ups
-                .filter((up: UserPack) => up.getUserId() === this.getId()))
-            .flatMap((ups: Array<UserPack>) => Observable
-                .zip(...ups
-                    .map((up: UserPack) => up.getRemoved()
-                        .map(removed => ({removed, up})))))
-            .map((ups: Array<{ removed: boolean, up: UserPack }>) => ups.filter(up => !up.removed).map(up => up.up));
-    }
-*/
     /**
      * Set devices
      *

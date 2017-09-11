@@ -5,6 +5,7 @@ import { FirebaseObjectFactory } from '../core/database';
 import { Subscription } from 'rxjs/Subscription';
 import { Pack } from '../models/Pack';
 import { User } from '../models/User';
+import 'rxjs/add/observable/zip';
 
 @Component({
     selector: 'bc-packs',
@@ -23,7 +24,7 @@ export class PacksComponent implements OnInit, OnDestroy {
         this.sub = FirebaseObjectFactory<User>(getRef(this.database.app, '/user/0'), User)
         // TODO: move to User model?
             .flatMap((u: User) => u.getAllPacks())
-            .subscribe((packs: Array<Pack>) => {
+            .subscribe(packs => {
                 this.packs = packs;
                 this.ref.detectChanges();
             });

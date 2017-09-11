@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { RetentionValue, UserPack } from '../../models/UserPack';
 import { Pack } from '../../models/Pack';
+import { Response } from '../../models/Response';
 import { Subscription } from 'rxjs/Subscription';
 
 @Component({
@@ -10,6 +11,7 @@ import { Subscription } from 'rxjs/Subscription';
 })
 export class SummaryRowComponent implements OnInit, OnDestroy {
     @Input() public userPack: UserPack;
+    @Input() public responses: Array<Response>;
     protected pack: Pack;
     private sub: Subscription;
     protected count: string;
@@ -26,7 +28,7 @@ export class SummaryRowComponent implements OnInit, OnDestroy {
                 this.pack = pack;
                 this.ref.detectChanges();
             });
-        this.countSub = this.userPack.getRetention()
+        this.countSub = this.userPack.getRetention(this.responses)
             .subscribe((retention: Array<RetentionValue>) => {
                 this.isNew = retention.filter(r => typeof r.lastAnswered !== 'undefined').length === 0;
                 this.count = retention.filter(r => r.shouldDisplay).length + '/' + retention.length;

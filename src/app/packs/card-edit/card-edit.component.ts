@@ -9,6 +9,7 @@ import { Card } from '../../models/Card';
 export class CardEditComponent implements OnInit {
 
     @Input() card: Card;
+    @Input() index: number;
 
     constructor() {
     }

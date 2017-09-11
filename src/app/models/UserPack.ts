@@ -1,6 +1,6 @@
 import { User } from './User';
 import { Pack } from './Pack';
-import { DbDeletableObject } from './DbIdObject';
+import { DbDeletableObject, DbIdObject } from './DbIdObject';
 import { Response } from './Response';
 import { Observable } from 'rxjs/Observable';
 import { Card } from './Card';
@@ -162,74 +162,33 @@ export class UserPack extends DbDeletableObject<UserPack> implements UserCollect
     public getPack = (): Observable<Pack> => this.getFk<Pack>('pack_id', Pack);
 
     /**
-     * @return Response[]
-     */
-    public getResponses(correct = 0): Observable<Array<Response>> {
-        const responses: Array<Response> = [];
-        return Observable.of(responses);
-        /*
-         return this.getUser()
-         .flatMap(user => user.getResponses().map((userResponses: Array<Response>) => {
-         const rids = [];
-         correct = 0;
-         for (const r in userResponses) {
-         if (!userResponses.hasOwnProperty(r)) {
-         continue;
-         }
-         if (userResponses[ r ].getCard().getPack().getId() === this.getPack().getId()
-         && rids.indexOf(userResponses[ r ].getCard().getId()) === -1) {
-         rids[ rids.length ] = userResponses[ r ].getCard().getId();
-         responses[ responses.length ] = userResponses[ r ];
-         if (userResponses[ r ].getCorrect()) {
-         correct++;
-         }
-         }
-         }
-         }))
-         .map(() => responses);
-         */
-    }
-
-    /**
      * Take a list of responses and calculate the retention values for the current date
      *
-     * @param refresh
+     * @param user
+     * @param responses
      * @returns {any}
      */
-    public getRetention(refresh = false): Observable<Array<RetentionValue>> {
-        if (typeof this.retention !== 'undefined' && typeof this.retention !== 'string' && !refresh) {
+    public getRetention(responses: Array<Response>): Observable<Array<RetentionValue>> {
+        if (!DbIdObject.REBUILD_INDEX
+            && typeof this.retention !== 'undefined' && typeof this.retention !== 'string') {
             return Observable.of(this.retention);
         }
-        refresh = true;
         // stream all the data we need
         return this.getPack()
-            .combineLatest(this.getUser(), (pack, user) => ({pack, user}))
-            // collect cards
-            .flatMap(({pack, user}) => pack.getCards().map(cards => ({
-                cards: cards.filter(c => !c.getDeleted()),
-                pack,
-                user
-            })))
+        // collect cards
+            .flatMap(pack => pack.getCards())
             // collect pack responses
-            .flatMap(({cards, pack, user}: { cards: Array<Card>, pack: Pack, user: User }) => {
-                if (pack.getId() + '' === '5') {
-                    console.log(cards);
-                }
-                const cardIds: Array<number> = cards.map(card => card.getId());
-                return user.getResponses()
-                    .map((r: Array<Response>) => r
-                        .filter(response => cardIds.indexOf(response.getCardId()) > -1))
-                    .map((r: Array<Response>) => r
-                        .sort(UserPack.sortResponse))
-                    .map(responses => ({responses, cards, pack, user}));
-            })
-            // calculate retention score for every card in the pack
-            .map(({responses, cards, pack, user}) => (this.retention = cards.map((card: Card) => {
-                const cardResponses = responses
-                    .filter(response => response.getCardId() === card.getId())
-                    .sort(UserPack.sortResponse);
-                return UserPack.calculateRetention(card.getId(), cardResponses);
-            })));
+            .map((cards: Array<Card>) => {
+                // calculate retention score for every card in the pack
+                return (this.retention = cards
+                    .filter(c => !c.getDeleted())
+                    .map((card: Card) => {
+                        const cardResponses = responses
+                            .filter(response => response.getCardId() === card.getId())
+                            .sort(UserPack.sortResponse);
+                        return UserPack.calculateRetention(card.getId(), cardResponses);
+                    }));
+            });
     }
 
     /**

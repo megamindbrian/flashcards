@@ -6,5 +6,5 @@
         <label>Today’s cards</label>
         <label>{{ total }} cards</label>
     </h2>
-    <bc-summary-row class="pack-row" [userPack]="pack" *ngFor="let pack of userPacks"></bc-summary-row>
+    <bc-summary-row class="pack-row" [responses]="responses" [userPack]="pack" *ngFor="let pack of userPacks"></bc-summary-row>
 </div>

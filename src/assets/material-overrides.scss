@@ -96,6 +96,10 @@ body {
         max-width: 1000px;
     }
 
+    .mat-input-infix {
+        width: 100%;
+    }
+
     md-select, .mat-input-wrapper {
         width: 100%;
     }
@@ -103,6 +107,10 @@ body {
     md-select, .mat-input-container {
         padding: 1px;
         text-align: left;
+    }
+
+    .tricky-select .mat-input-underline {
+        display: none;
     }
 
 }

@@ -72,7 +72,7 @@ export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionFor
     /**
      * @ORM\Column(type="string", length=16, name="status")
      */
-    protected status = 'UNPUBLISHED';
+    public status = 'UNPUBLISHED';
 
     /**
      * @ORM\Column(type="decimal", name="price")
@@ -82,7 +82,7 @@ export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionFor
     /**
      * @ORM\Column(type="text", name="title")
      */
-    protected title: string;
+    public title: string;
 
     /**
      * @ORM\Column(type="text", name="description")
@@ -415,23 +415,6 @@ export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionFor
         return this.getGroupNames().map(g => g.indexOf(name) > -1);
     }
 
-    /**
-     * Get cards
-     *
-     * @return Array<Card>
-     */
-
-    /*
-    public getCards(): Observable<Array<Card>> {
-        return FirebaseListFactory<Card>(this.$ref.root.child('card'), Card)
-            .map((cards: Array<Card>) => cards
-                .filter((card: Card) => card.getPackId() === this.getId()))
-            // this.list<Card>('cards', ref => FirebaseObjectFactory<Card>(ref, Card))
-            .map((c: Array<Card>) => this.getStatus() === 'DELETED'
-                ? []
-                : c.filter((card: Card) => !card.getDeleted()));
-    }
-*/
     /**
      * Set downloads
      *

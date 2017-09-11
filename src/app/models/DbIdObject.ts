@@ -1,9 +1,16 @@
 // expose database so objects maintain their own reference code
 import { DatabaseReference } from 'angularfire2/database/interfaces';
 import { Observable } from 'rxjs/Observable';
-import { FirebaseListFactory } from 'angularfire2/database';
+import { FirebaseListFactory, FirebaseObjectFactory } from '../core/database';
 
 export class DbIdObject {
+    static REBUILD_INDEX = false;
+
+    static factories: {
+        [index: string]: Observable<Array<any>>;
+    } = {};
+
+    [index: string]: any;
     protected created: Date | string;
     protected id: number | string;
 
@@ -21,9 +28,9 @@ export class DbIdObject {
     public card_id?: number | string;
 
     // TODO: move ORM mapping login to unwrapper function?
-    constructor(protected $ref: DatabaseReference,
-                protected $exists: boolean,
-                protected $key: string) {
+    constructor(public $ref: DatabaseReference,
+                public $exists: boolean,
+                public $key: string) {
         if (!this.$exists) {
             this.created = new Date();
         }
@@ -53,22 +60,30 @@ export class DbIdObject {
     protected list<R extends DbIdObject>(path: string,
                                          foreign: keyof DbIdObject,
                                          type: any): Observable<Array<R>> {
-        // const list = FirebaseListFactory<R>(this.$ref.child(path), type);
+        const id = this.getId();
         const rootPath = this.$ref.ref.root.child(path);
-
+        const key = path.split('_')
+            .map((p, i) => i > 0 ? p.substr(0, 1).toUpperCase() + p.substr(1) : p)
+            .join('') + 's';
         // TODO: when in admin row or ACL building mode, go the distance
-        return FirebaseListFactory(rootPath)
-            .map((ups: Array<R>) => ups
-                .filter((up: R) => '' + up[ foreign ] === '' + this.getId()));
-
-        /*
         // use traditional method of storing a simple list of ids
-        return list
-            .flatMap((r: Array<string>) =>
-                Observable.zip(...r.map((rid: string) =>
-                    FirebaseObjectFactory<R>(rootPath.child(rid), type))))
-            .map((r: Array<any>) => r.map((result: any) => result as R));
-            */
+        if (!DbIdObject.REBUILD_INDEX && typeof this[ key ] !== 'undefined' && this[ key ] !== null) {
+            return Observable.zip(...this[ key ].map((rid: string) =>
+                FirebaseObjectFactory<R>(rootPath.child(rid), type)));
+        }
+        // look up IDs out of the entire list of entities
+        let results: Array<R> = [];
+        return (typeof DbIdObject.factories[ '' + type ] !== 'undefined'
+            ? DbIdObject.factories[ '' + type ]
+            : (DbIdObject.factories[ '' + type ] = FirebaseListFactory<R>(rootPath, type)))
+            .flatMap((ups: Array<R>) => {
+                results = ups
+                    .filter((up: R) => '' + up[ foreign ] === '' + id)
+                    .map((result: any) => result as R);
+                this[ key ] = results.map((up: R) => up.$key);
+                return this.$ref.child(key).set(results.map((up: R) => up.$key));
+            })
+            .map(() => results);
     }
 
     protected setFk<R extends DbIdObject>(property: keyof DbIdObject, item?: R): Observable<this> {
@@ -82,18 +97,25 @@ export class DbIdObject {
     }
 
     protected getFk<R extends DbIdObject>(property: keyof DbIdObject, type: any): Observable<R> {
+        if (typeof this[ property ] === 'undefined' || this[ property ] === null) {
+            return Observable.of(void 0);
+        }
         const ref = this.$ref.root.child(('' + property)
             .replace('_id', ''));
-        return FirebaseListFactory(ref)
-            .map((ups: Array<R>) => ups
-                .filter((up: R) => '' + up.getId() === '' + this[ property ])[ 0 ]);
-        /*
-        return FirebaseObjectFactory<R>(
-            this.$ref.root.child(('' + property)
-                .replace('_id', ''))
-                .child('' + this[ property ])
-            , type);
-            */
+        const key = ('' + property).replace('_id', '') + '_fk';
+        if (typeof this[ key ] !== 'undefined' && this[ key ] !== null) {
+            return FirebaseObjectFactory<R>(ref.child(this[ key ]), type);
+        }
+        let result: R;
+        return (typeof DbIdObject.factories[ '' + type ] !== 'undefined'
+            ? DbIdObject.factories[ '' + type ]
+            : (DbIdObject.factories[ '' + type ] = FirebaseListFactory<R>(ref, type)))
+            .flatMap((ups: Array<R>) => {
+                result = ups
+                    .filter((up: R) => '' + up.getId() === '' + this[ property ])[ 0 ];
+                return this.$ref.child(key).set(result.$key);
+            })
+            .map(() => result);
     }
 }
 

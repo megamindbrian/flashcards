@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { Pack } from '../models/Pack';
+import { Card } from '../models/Card';
 
 @Component({
     selector: 'bc-pack-row',
@@ -13,14 +14,16 @@ export class PackRowComponent implements OnInit, OnDestroy {
     protected cardCount: number;
     protected firstCard: number;
     private logo: string;
-    private logoSub: Subscription;
 
     constructor(public ref: ChangeDetectorRef) {
     }
 
     ngOnInit(): void {
-        this.sub = this.pack.getCards()
-            .subscribe(all => {
+        this.sub = this.pack.getLogo()
+        // TODO: make Cards static, takes too long to build index
+            .combineLatest(this.pack.getCards(), (file: string, all: Array<Card>) => ({file, all}))
+            .subscribe(({file, all}: ({ file: string, all: Array<Card> })) => {
+                this.logo = file || '/assets/upload_image.png';
                 const cards = all.filter(c => !c.getDeleted());
                 this.cardCount = cards.length;
                 this.firstCard = cards.length > 0
@@ -28,19 +31,11 @@ export class PackRowComponent implements OnInit, OnDestroy {
                     : void 0;
                 this.ref.detectChanges();
             });
-        this.logoSub = this.pack.getLogo()
-            .subscribe((logo: string) => {
-                this.logo = logo || '/assets/upload_image.png';
-                this.ref.detectChanges();
-            });
     }
 
     ngOnDestroy(): void {
         if (typeof this.sub !== 'undefined') {
             this.sub.unsubscribe();
-        }
-        if (typeof this.logoSub !== 'undefined') {
-            this.logoSub.unsubscribe();
         }
     }
 

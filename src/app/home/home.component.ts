@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { User } from '../models/User';
+import { Response } from '../models/Response';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { getRef } from 'angularfire2/database/utils';
 import { FirebaseObjectFactory } from '../core/database';
@@ -17,6 +18,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     public userPacks: Array<UserPack>;
     private sub: Subscription;
     private total: number;
+    private responses: Array<Response>;
 
     constructor(public ref: ChangeDetectorRef,
                 public database: AngularFireDatabase) {
@@ -26,22 +28,21 @@ export class HomeComponent implements OnInit, OnDestroy {
         // this.database.user('/user/0');
         this.sub = FirebaseObjectFactory<User>(getRef(this.database.app, '/user/0'), User)
         // TODO: move to User model?
-            .flatMap((u: User) => u.getUserPacks())
-            .flatMap(ups => Observable
-                .zip(...ups.map(up => up.getRetention()
-                    .map(retention => ({
-                        retention: retention
-                            .filter(r => r.shouldDisplay), up
-                    })))))
-            .map((r: Array<{ retention: Array<RetentionValue>, up: UserPack }>) => r
-                .filter(retention => retention.retention.length > 0))
-            .map((r: Array<{ retention: Array<RetentionValue>, up: UserPack }>) => ({
-                ups: r.map(retention => retention.up),
-                total: r.reduce((a, b) => a + b.retention.length, 0)
-            }))
-            .subscribe(({ups, total}: { ups: Array<UserPack>, total: number }) => {
-                this.userPacks = ups;
-                this.total = total;
+            .flatMap((u: User) => u.getUserPacks()
+                .combineLatest(u.getResponses(), (userPacks, responses) => ({userPacks, responses})))
+            .flatMap(({userPacks, responses}: { userPacks: Array<UserPack>, responses: Array<Response> }) => {
+                this.responses = responses;
+                return Observable
+                    .zip(...userPacks.map(userPack => userPack.getRetention(responses)
+                        .map(retention => ({
+                            retention: retention.filter(r => r.shouldDisplay),
+                            up: userPack
+                        }))));
+            })
+            .subscribe((ups: Array<{ retention: Array<RetentionValue>, up: UserPack }>) => {
+                const r = ups.filter(retention => retention.retention.length > 0);
+                this.userPacks = r.map(retention => retention.up);
+                this.total = r.reduce((a, b) => a + b.retention.length, 0);
                 this.ref.detectChanges();
             });
     }

@@ -1,25 +1,30 @@
-<label class="input select type">
-    <span>1</span>
-    <md-select name="responseType" placeholder="Card type">
-        <md-option value="" selected="selected">Flash card</md-option>
+<md-input-container class="tricky-select card-type">
+    <input mdInput type="text" title="" [ngStyle]="{'display':'none'}"/>
+    <span>{{ index }}</span>
+    <md-select [ngModel]="card?.getResponseType()" (ngModelChange)="card.setResponseType($event)"
+               name="responseType" placeholder="Card type">
+        <md-option value="">Flash card</md-option>
         <md-option value="mc">Multiple choice</md-option>
         <md-option value="tf">True/False</md-option>
         <md-option value="sa contains">Short answer (contains)</md-option>
         <md-option value="sa exactly">Short answer (exact match)</md-option>
     </md-select>
-</label>
+</md-input-container>
 <input name="upload" value="" type="hidden">
 <a href="#" class="upload-image" data-target="#upload-file" data-toggle="modal"> </a>
 <a href="#" class="upload-audio" data-target="#upload-file" data-toggle="modal"> </a>
 <a href="#" class="upload-video" data-target="#upload-file" data-toggle="modal"> </a>
 
 <md-input-container class="input content">
-    <textarea mdInput name="content" placeholder="Prompt" style="height: 48px;">I am the vine; you are the branches. If a man remains in me and I in him, he will bear much fruit; apart from me you can do nothing.</textarea>
+    <textarea mdInput name="content" placeholder="Prompt"
+              [ngModel]="card?.getContent()" (ngModelChange)="card.setContent($event)"></textarea>
 </md-input-container>
-<md-input-container class="input correct editing">
-    <textarea mdInput name="correct" placeholder="Answer" style="height: 27px;">John 15:5</textarea>
+<md-input-container *ngIf="card.getResponseType() !== 'tf' && card.getResponseType() !== 'mc'"
+                    class="input correct editing">
+    <textarea mdInput name="correct" placeholder="Answer"
+              [ngModel]="card?.getResponseContent()" (ngModelChange)="card.setResponseContent($event)"></textarea>
 </md-input-container>
-<div class="correct type-mc editing">
+<div *ngIf="card.getResponseType() === 'mc'" class="correct type-mc editing">
     <md-checkbox name="correct-mc-1674" value="John 15:5"
                  checked="checked"><i></i><span>John 15:5</span></md-checkbox>
     <md-input-container class="input">
@@ -27,13 +32,10 @@
                   data-prefix="_clear\n">John 15:5</textarea>
     </md-input-container>
 </div>
-<md-radio-group>
+<md-radio-group *ngIf="card.getResponseType() === 'tf'">
     <md-radio-button value="true">True</md-radio-button>
     <md-radio-button value="false">False</md-radio-button>
 </md-radio-group>
-<md-input-container class="input correct type-sa editing">
-    <textarea mdInput name="correct" placeholder="Answer">John 15:5</textarea>
-</md-input-container>
 
 <div class="highlighted-link">
     <a title="Remove card" href="#remove-confirm-card">&nbsp;</a>

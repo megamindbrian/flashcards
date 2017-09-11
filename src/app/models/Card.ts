@@ -38,17 +38,17 @@ export class Card extends DbDeletableObject<Card> implements AnswerCollection,
     /**
      * @ORM\Column(type="text", name="response_content", nullable=true)
      */
-    protected responseContent = '';
+    protected response_content = '';
 
     /**
      * @ORM\Column(type="string", length=16, name="content_type")
      */
-    protected contentType = ''; // default is TEXT
+    protected content_type = ''; // default is TEXT
 
     /**
      * @ORM\Column(type="string", length=16, name="response_type")
      */
-    protected responseType = ''; // default is flash-card
+    protected response_type = ''; // default is flash-card
 
     /**
      * @ORM\Column(type="string", length=16, name="recurrence")
@@ -81,13 +81,6 @@ export class Card extends DbDeletableObject<Card> implements AnswerCollection,
     public setPack = (item?: Pack) => this.setFk<Pack>('pack_id', item);
     public getPackId = () => this.getFkId<Pack>('pack_id');
     public getPack = (): Observable<Pack> => this.getFk<Pack>('pack_id', Pack);
-
-    public getIndex(): Observable<number> {
-        return Observable.of(1);
-        // return typeof (this.getPack() !== 'undefined' ? this.getPack().getCards() : Observable.of([]))
-        //    .map((c: Array<Card>) => c.filter((card: Card) => !card.getDeleted()).indexOf(this);
-        // return this.getPack().flatMap(p => );
-    }
 
     /**
      * @return Answer
@@ -165,45 +158,45 @@ export class Card extends DbDeletableObject<Card> implements AnswerCollection,
     }
 
     /**
-     * Set responseContent
+     * Set response_content
      *
      * @return Card
      * @param responseContent
      */
     public setResponseContent(responseContent: string): this {
-        this.responseContent = responseContent;
+        this.response_content = responseContent;
 
         return this;
     }
 
     /**
-     * Get responseContent
+     * Get response_content
      *
      * @return string
      */
     public getResponseContent(): string {
-        return this.responseContent;
+        return this.response_content;
     }
 
     /**
-     * Set contentType
+     * Set content_type
      *
      * @return Card
      * @param contentType
      */
     public setContentType(contentType: string): this {
-        this.contentType = contentType;
+        this.content_type = contentType;
 
         return this;
     }
 
     /**
-     * Get contentType
+     * Get content_type
      *
      * @return string
      */
     public getContentType(): string {
-        return this.contentType;
+        return this.content_type;
     }
 
     /**
@@ -213,7 +206,7 @@ export class Card extends DbDeletableObject<Card> implements AnswerCollection,
      * @param responseType
      */
     public setResponseType(responseType: string): this {
-        this.responseType = responseType.split(' ')[ 0 ];
+        this.response_type = responseType.split(' ')[ 0 ];
 
         return this;
     }
@@ -224,7 +217,7 @@ export class Card extends DbDeletableObject<Card> implements AnswerCollection,
      * @return string
      */
     public getResponseType(): string {
-        return this.responseType;
+        return this.response_type;
     }
 
     /**

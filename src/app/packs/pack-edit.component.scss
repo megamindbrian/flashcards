@@ -1,9 +1,5 @@
 @import '../../assets/colors';
 
-.tricky-select /deep/ .mat-input-underline {
-    display: none;
-}
-
 :host {
     flex-direction: column;
 }
@@ -43,9 +39,10 @@ header {
     padding-left: 215px;
 }
 
-form > *,
+form > *:not(header),
 header > * {
     flex-basis: 50%;
+    width: 50%;
 }
 
 .pack-icon {
