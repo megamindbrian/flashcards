@@ -10,6 +10,7 @@ export class CardEditComponent implements OnInit {
 
     @Input() card: Card;
     @Input() index: number;
+    @Input() readonly = false;
 
     constructor() {
     }

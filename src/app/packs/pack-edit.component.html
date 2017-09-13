@@ -1,66 +1,72 @@
-<div class="edit-wrapper">
-    <a href="#upload-image" data-target="#upload-file" data-toggle="modal"
-       class="pack-icon cloak centerized">
-        <i>
-            <img height="50" src="https://s3-us-west-2.amazonaws.com/studysauce/2016-01-15.png"
-                 class="centerized">
-        </i>
-        <input name="logo" value="https://s3-us-west-2.amazonaws.com/studysauce/2016-01-15.png"
-               type="hidden">
-        <span class="reveal"> Image</span>
-    </a>
+<form action="/packs/create">
+    <div class="edit-wrapper">
+        <a href="#upload-image" data-target="#upload-file" data-toggle="modal"
+           class="pack-icon cloak centerized">
+            <i>
+                <img height="50" src="https://s3-us-west-2.amazonaws.com/studysauce/2016-01-15.png"
+                     class="centerized">
+            </i>
+            <input name="logo" value="https://s3-us-west-2.amazonaws.com/studysauce/2016-01-15.png"
+                   type="hidden">
+            <span class="reveal"> Image</span>
+        </a>
 
-    <form action="/packs/create">
-        <header class="pack">
-            <label>Pack name</label>
-            <label>Pack status</label>
-            <label>Keyboard type</label>
-        </header>
+        <div class="edit-pack">
+            <header class="pack">
+                <label>Pack name</label>
+                <label>Pack status</label>
+                <label>Keyboard type</label>
+            </header>
 
-        <md-input-container class="name">
-            <input mdInput type="text" name="title" placeholder="Give your pack a title"
-                   [ngModel]="pack?.getTitle()" (ngModelChange)="pack.setTitle($event)"></md-input-container>
+            <md-input-container class="name">
+                <input mdInput [disabled]="readonly" type="text" name="title" placeholder="Give your pack a title"
+                       [ngModel]="pack?.getTitle()" (ngModelChange)="pack.setTitle($event)"></md-input-container>
 
-        <md-input-container class="tricky-select">
-            <input mdInput type="text" title="" [ngStyle]="{'display':'none'}"/>
-            <md-select [ngModel]="pack?.getStatus()" (ngModelChange)="pack.setStatus($event)" name="status"
-                       placeholder="(Click to publish)"
-                       data-publish="{&quot;schedule&quot;:&quot;Thu, 07 Apr 2016 18:23:23 -0700&quot;,&quot;email&quot;:&quot;true&quot;,&quot;alert&quot;:&quot;true&quot;}">
-                <md-option value="UNPUBLISHED">Unpublished</md-option>
-                <md-option value="GROUP" data-confirm="#pack-publish">Published</md-option>
-                <md-option value="PUBLIC">Public</md-option>
-                <md-option value="UNLISTED">Unlisted</md-option>
-                <md-option value="DELETED">Deleted</md-option>
-            </md-select>
-        </md-input-container>
+            <md-input-container class="tricky-select">
+                <input mdInput type="text" title="" [ngStyle]="{'display':'none'}"/>
+                <md-select [ngModel]="pack?.getStatus()" (ngModelChange)="pack.setStatus($event)" name="status"
+                           placeholder="(Click to publish)" [disabled]="readonly"
+                           data-publish="{&quot;schedule&quot;:&quot;Thu, 07 Apr 2016 18:23:23 -0700&quot;,&quot;email&quot;:&quot;true&quot;,&quot;alert&quot;:&quot;true&quot;}">
+                    <md-option value="UNPUBLISHED">Unpublished</md-option>
+                    <md-option value="GROUP" data-confirm="#pack-publish">Published</md-option>
+                    <md-option value="PUBLIC">Public</md-option>
+                    <md-option value="UNLISTED">Unlisted</md-option>
+                    <md-option value="DELETED">Deleted</md-option>
+                </md-select>
+            </md-input-container>
 
-        <md-input-container class="tricky-select">
-            <input mdInput type="text" [ngStyle]="{'display':'none'}"/>
-            <md-select name="properties[keyboard]" placeholder="(Select keyboard)">
-                <md-option value="basic">Normal (default)</md-option>
-                <md-option value="number">Numbers only</md-option>
-            </md-select>
-        </md-input-container>
+            <md-input-container class="tricky-select">
+                <input mdInput type="text" [ngStyle]="{'display':'none'}"/>
+                <md-select name="properties[keyboard]" placeholder="(Select keyboard)" [disabled]="readonly">
+                    <md-option value="basic">Normal (default)</md-option>
+                    <md-option value="number">Numbers only</md-option>
+                </md-select>
+            </md-input-container>
 
-        <div class="highlighted-link form-actions pack">
-            <div class="invalid-error">
-                <span class="pack-error">The pack is missing a title</span>
-                <span class="card-error">The list below has errors in it</span>
-                <br>
-                <a href="#goto-error">Click here to highlight next problem</a>
+            <div class="form-actions">
+                <div class="invalid-error">
+                    <span class="pack-error">The pack is missing a title</span>
+                    <span class="card-error">The list below has errors in it</span>
+                    <br>
+                    <a href="#goto-error">Click here to highlight next problem</a>
+                </div>
+                <a md-raised-button color="primary" class="btn"
+                   (click)="readonly = false" *ngIf="readonly">Edit Pack</a>
+                <a md-raised-button color="secondary" class="btn cancel-edit"
+                   routerLink="/packs" *ngIf="!readonly">Close</a>
+                <a md-raised-button color="primary" class="more"
+                   (click)="readonly = true" *ngIf="!readonly">Save</a>
+                <a title="Remove pack" *ngIf="!readonly" href="#general-dialog"
+                   data-confirm="Are you sure you would like to delete the pack “2015 Scripture Challenge” permanently?"
+                   class="remove-icon"
+                   data-action="/command/save?pack%5Bid%5D=5&amp;pack%5Bstatus%5D=DELETED&amp;tables%5Bpack%5D%5B%5D=status&amp;redirect=%2Fpacks"
+                   data-target="#general-dialog" data-toggle="modal">&nbsp;</a>
             </div>
-            <a href="#edit-pack" class="btn">Edit Pack</a>
-            <a md-raised-button href="/packs" color="secondary" class="btn cancel-edit">Close</a>
-            <a md-raised-button href="#save-pack" color="primary" class="more">Save</a>
-            <a title="Remove pack" href="#general-dialog"
-               data-confirm="Are you sure you would like to delete the pack “2015 Scripture Challenge” permanently?"
-               class="remove-icon"
-               data-action="/command/save?pack%5Bid%5D=5&amp;pack%5Bstatus%5D=DELETED&amp;tables%5Bpack%5D%5B%5D=status&amp;redirect=%2Fpacks"
-               data-target="#general-dialog" data-toggle="modal">&nbsp;</a>
         </div>
-    </form>
-</div>
+    </div>
 
-<div class="cards-wrapper">
-    <bc-card-edit [card]="card" [index]="i+1" *ngFor="let card of cards; let i=index"></bc-card-edit>
-</div>
+    <fieldset class="cards-wrapper" [disabled]="readonly">
+        <bc-card-edit [card]="card" [readonly]="readonly" [index]="i+1"
+                      *ngFor="let card of cards; let i=index"></bc-card-edit>
+    </fieldset>
+</form>

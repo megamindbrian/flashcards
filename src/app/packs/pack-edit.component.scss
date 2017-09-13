@@ -11,7 +11,7 @@
     background: $light-light-gray;
 }
 
-form {
+.edit-pack {
     display: flex;
     position: relative;
     z-index: 1;
@@ -31,7 +31,7 @@ md-input-container {
     padding-right: 215px;
 }
 
-form,
+.edit-pack,
 header {
     width: 100%;
     display: flex;
@@ -39,7 +39,7 @@ header {
     padding-left: 215px;
 }
 
-form > *:not(header),
+.edit-pack > *:not(header),
 header > * {
     flex-basis: 50%;
     width: 50%;
@@ -68,4 +68,12 @@ img {
     height: auto;
     max-height: 100%;
     max-width: 100%;
+}
+
+.invalid-error {
+    color: $warning;
+}
+
+.form-actions {
+    text-align: right;
 }

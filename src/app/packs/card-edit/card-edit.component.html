@@ -1,7 +1,7 @@
 <md-input-container class="tricky-select card-type">
     <input mdInput type="text" title="" [ngStyle]="{'display':'none'}"/>
     <span>{{ index }}</span>
-    <md-select [ngModel]="card?.getResponseType()" (ngModelChange)="card.setResponseType($event)"
+    <md-select [disabled]="readonly" [ngModel]="card?.getResponseType()" (ngModelChange)="card.setResponseType($event)"
                name="responseType" placeholder="Card type">
         <md-option value="">Flash card</md-option>
         <md-option value="mc">Multiple choice</md-option>
@@ -16,25 +16,25 @@
 <a href="#" class="upload-video" data-target="#upload-file" data-toggle="modal"> </a>
 
 <md-input-container class="input content">
-    <textarea mdInput name="content" placeholder="Prompt"
+    <textarea [disabled]="readonly" mdInput name="content" placeholder="Prompt"
               [ngModel]="card?.getContent()" (ngModelChange)="card.setContent($event)"></textarea>
 </md-input-container>
 <md-input-container *ngIf="card.getResponseType() !== 'tf' && card.getResponseType() !== 'mc'"
                     class="input correct editing">
-    <textarea mdInput name="correct" placeholder="Answer"
+    <textarea [disabled]="readonly" mdInput name="correct" placeholder="Answer"
               [ngModel]="card?.getResponseContent()" (ngModelChange)="card.setResponseContent($event)"></textarea>
 </md-input-container>
 <div *ngIf="card.getResponseType() === 'mc'" class="correct type-mc editing">
     <md-checkbox name="correct-mc-1674" value="John 15:5"
-                 checked="checked"><i></i><span>John 15:5</span></md-checkbox>
+                 checked="checked" [disabled]="readonly"><i></i><span>John 15:5</span></md-checkbox>
     <md-input-container class="input">
-        <textarea mdInput name="answers" placeholder="Answers" data-delimiter="\s*\n\s*|\s*\\n\s*"
+        <textarea [disabled]="readonly" mdInput name="answers" placeholder="Answers" data-delimiter="\s*\n\s*|\s*\\n\s*"
                   data-prefix="_clear\n">John 15:5</textarea>
     </md-input-container>
 </div>
 <md-radio-group *ngIf="card.getResponseType() === 'tf'">
-    <md-radio-button value="true">True</md-radio-button>
-    <md-radio-button value="false">False</md-radio-button>
+    <md-radio-button value="true" [disabled]="readonly">True</md-radio-button>
+    <md-radio-button value="false" [disabled]="readonly">False</md-radio-button>
 </md-radio-group>
 
 <div class="highlighted-link">

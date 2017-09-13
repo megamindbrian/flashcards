@@ -57,6 +57,16 @@ h2 > *:last-child {
     flex-grow: 1;
 }
 
+bc-summary-row {
+    display: block;
+    position: relative;
+}
+
+bc-summary-row:hover /deep/ .edit-icon {
+    opacity: 1;
+    visibility: visible;
+}
+
 /deep/ .home .mat-sidenav-container {
     background: url(/assets/neural_darkened.jpg) no-repeat center center #333;
     background-size: cover;

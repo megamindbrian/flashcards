@@ -7,6 +7,7 @@ import { getRef } from 'angularfire2/database/utils';
 import { NavigationEnd, Router } from '@angular/router';
 import 'rxjs/operator/debounce';
 import { FirebaseListFactory } from '../core/database';
+import { DbIdObject } from '../models/DbIdObject';
 
 @Component({
     selector: 'bc-pack-edit',
@@ -20,6 +21,7 @@ export class PackEditComponent implements OnInit, OnDestroy {
     private packId: number;
     public pack: Pack;
     private cardsSub: Subscription;
+    public readonly = true;
 
     constructor(public ref: ChangeDetectorRef,
                 public router: Router,
@@ -37,7 +39,7 @@ export class PackEditComponent implements OnInit, OnDestroy {
             .filter(e => e instanceof NavigationEnd)
             .subscribe(() => this.packIdFromUrl(this.router.url));
 
-        this.sub = FirebaseListFactory<Pack>(getRef(this.database.app, '/pack'), Pack)
+        this.sub = DbIdObject.list(this.database.database.ref('/pack'), Pack)
             .map((packs: Array<any>) => packs.filter(pack => pack.id + '' === this.packId + '')[ 0 ])
             .flatMap((pack: Pack) => {
                 return pack.getCards()

@@ -244,6 +244,10 @@ export class Pack extends DbPropertiesObject<Pack> implements GroupCollectionFor
          */
     }
 
+    public getDeleted(): boolean {
+        return this.getStatus() === 'DELETED' || super.getDeleted();
+    }
+
     public getUserById(id: number): Observable<User> {
         return this.getUser()
             .flatMap(u => typeof u !== 'undefined' && u.getId() === id

@@ -221,10 +221,13 @@ export class User extends BaseUser implements VisitCollection,
                 .map(({p, up}) => p));
         return Observable.zip(this.getPacks(), userPacks)
             .map(ps => [].concat(...ps))
-            .map(p => p
-                .filter((elem: Pack, pos: number, arr: Array<Pack>) => {
-                    return !elem.getDeleted() && arr.indexOf(elem) === pos;
-                }));
+            .map(p => {
+                const ids = p.map((pack: Pack) => pack.getId());
+                return p
+                    .filter((elem: Pack, pos: number, arr: Array<Pack>) => {
+                        return !elem.getDeleted() && ids.indexOf(elem.getId()) === pos;
+                    });
+            });
     }
 
     /**
