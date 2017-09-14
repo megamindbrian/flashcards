@@ -27,6 +27,7 @@ export class DbIdObject {
     public invite_id?: number | string;
     public visit_id?: number | string;
     public card_id?: number | string;
+    public session_id?: string;
 
     public static list<R extends DbIdObject>(root: firebase.database.Reference, type: any): Observable<Array<R>> {
         if (typeof DbIdObject.subscriptions[ root.path ] === 'undefined') {

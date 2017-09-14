@@ -74,17 +74,17 @@ export class Bundle extends DbPropertiesObject<Bundle> implements GroupCollectio
      * @ORM\OrderBy({"created" = "DESC"})
      */
 
-    addPack = (bundle: Pack) => Observable.of(this);
-    removePack = (bundle: Pack) => Observable.of(this);
-    getPacks = () => Observable.of([] as Array<Pack>);
+    public addPack = (pack: Pack) => this.add('packs', pack);
+    public removePack = (pack: Pack) => this.remove('packs', pack);
+    public getPacks = (): Observable<Array<Pack>> => this.list('pack', 'bundle_id', Pack);
 
-    addPayment = (bundle: Payment) => Observable.of(this);
-    removePayment = (bundle: Payment) => Observable.of(this);
-    getPayments = () => Observable.of([] as Array<Payment>);
+    public addPayment = (item: Payment) => this.add('payments', item);
+    public removePayment = (item: Payment) => this.remove('payments', item);
+    public getPayments = (): Observable<Array<Payment>> => this.list('payment', 'bundle_id', Payment);
 
-    setGroup = (bundle: Group) => Observable.of(this);
-    getGroupId = () => 0;
-    getGroup = () => Observable.of(void 0 as Group);
+    public setGroup = (group?: Group) => this.setFk<Group>('group_id', group);
+    public getGroupId = () => this.getFkId<Group>('group_id');
+    public getGroup = (): Observable<Group> => this.getFk<Group>('group_id', Group);
 
     public getCardCount(): Observable<number> {
         return this.getPacks()

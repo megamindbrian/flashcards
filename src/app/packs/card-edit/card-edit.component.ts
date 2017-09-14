@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Card } from '../../models/Card';
+import { Answer } from '../../models/Answer';
 
 @Component({
     selector: 'bc-card-edit',
@@ -8,6 +9,8 @@ import { Card } from '../../models/Card';
 })
 export class CardEditComponent implements OnInit {
 
+    public correct: Answer;
+    @Input() answers: Array<Answer>;
     @Input() card: Card;
     @Input() index: number;
     @Input() readonly = false;
@@ -16,6 +19,15 @@ export class CardEditComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.correct = this.answers.filter(a => a.getCorrect())[ 0 ];
+    }
+
+    public getAnswersPlainText() {
+
+    }
+
+    public setAnswersPlainText() {
+
     }
 
 }

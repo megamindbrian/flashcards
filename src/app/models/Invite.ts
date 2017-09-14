@@ -70,13 +70,13 @@ export class Invite extends DbPropertiesObject<Invite> implements GroupCollectio
     protected reminder: Date;
 
     /** @ORM\Column(name="properties", type="array", nullable=true) */
-    setPack = (pack: Pack) => Observable.of(this);
-    getPackId = () => 0;
-    getPack = () => Observable.of(void 0 as Pack);
+    public setPack = (item?: Pack) => this.setFk<Pack>('pack_id', item);
+    public getPackId = () => this.getFkId<Pack>('pack_id');
+    public getPack = (): Observable<Pack> => this.getFk<Pack>('pack_id', Pack);
 
-    setGroup = (bundle: Group) => Observable.of(this);
-    getGroupId = () => 0;
-    getGroup = () => Observable.of(void 0 as Group);
+    public setGroup = (group?: Group) => this.setFk<Group>('group_id', group);
+    public getGroupId = () => this.getFkId<Group>('group_id');
+    public getGroup = (): Observable<Group> => this.getFk<Group>('group_id', Group);
 
     public setUser = (user?: User) => this.setFk<User>('user_id', user);
     public getUserId = () => this.getFkId<User>('user_id');

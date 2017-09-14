@@ -82,9 +82,9 @@ export class BaseUser extends DbPropertiesObject<BaseUser> implements GroupColle
      */
     protected roles: Array<string>;
 
-    addGroup = (bundle: Group) => Observable.of(this);
-    removeGroup = (bundle: Group) => Observable.of(this);
-    getGroups = () => Observable.of([] as Array<Group>);
+    public addGroup = (item: Group) => this.add('groups', item);
+    public removeGroup = (item: Group) => this.remove('groups', item);
+    public getGroups = (): Observable<Array<Group>> => this.list('group', 'pack_id', Group);
 
     /**
      * {@inheritdoc}

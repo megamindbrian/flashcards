@@ -19,7 +19,6 @@ export class Visit extends DbDeletableObject<Visit> implements UserCollectionFor
      * @ORM\ManyToOne(targetEntity="Session", inversedBy="visits")
      * @ORM\Column(type="string", name="session_id", length=64, nullable=true)
      */
-    protected session_id: string;
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="visits")

@@ -66,7 +66,7 @@
     </div>
 
     <fieldset class="cards-wrapper" [disabled]="readonly">
-        <bc-card-edit [card]="card" [readonly]="readonly" [index]="i+1"
+        <bc-card-edit [answers]="card.answers" [card]="card.card" [readonly]="readonly" [index]="i+1"
                       *ngFor="let card of cards; let i=index"></bc-card-edit>
     </fieldset>
 </form>

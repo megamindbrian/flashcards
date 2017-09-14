@@ -12,7 +12,6 @@ export class Session extends DbDeletableObject<Session> implements VisitCollecti
      * @ORM\Column(type="string", length=128, name="session_id")
      * @ORM\Id
      */
-    protected session_id: string;
 
     /**
      * @ORM\Column(type="text", name="session_value")
@@ -34,9 +33,9 @@ export class Session extends DbDeletableObject<Session> implements VisitCollecti
      * @ORM\OrderBy({"created" = "DESC"})
      */
 
-    addVisit = (bundle: Visit) => Observable.of(this);
-    removeVisit = (bundle: Visit) => Observable.of(this);
-    getVisits = () => Observable.of([] as Array<Visit>);
+    public addVisit = (item: Visit) => this.add('visits', item);
+    public removeVisit = (item: Visit) => this.remove('visits', item);
+    public getVisits = (): Observable<Array<Visit>> => this.list('visit', 'session_id', Visit);
 
     public getSessionId(): string {
         return this.session_id;

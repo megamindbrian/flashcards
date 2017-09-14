@@ -3,11 +3,11 @@ import { Card } from '../models/Card';
 import { Subscription } from 'rxjs/Subscription';
 import { Pack } from '../models/Pack';
 import { AngularFireDatabase } from 'angularfire2/database';
-import { getRef } from 'angularfire2/database/utils';
 import { NavigationEnd, Router } from '@angular/router';
 import 'rxjs/operator/debounce';
-import { FirebaseListFactory } from '../core/database';
 import { DbIdObject } from '../models/DbIdObject';
+import { Observable } from 'rxjs/Observable';
+import { Answer } from '../models/Answer';
 
 @Component({
     selector: 'bc-pack-edit',
@@ -15,7 +15,7 @@ import { DbIdObject } from '../models/DbIdObject';
     styleUrls: [ './pack-edit.component.scss' ]
 })
 export class PackEditComponent implements OnInit, OnDestroy {
-    public cards: Array<Card>;
+    public cards: Array<{ card: Card, answers: Array<Answer> }>;
     private sub: Subscription;
     private routerSub: Subscription;
     private packId: number;
@@ -41,21 +41,19 @@ export class PackEditComponent implements OnInit, OnDestroy {
 
         this.sub = DbIdObject.list(this.database.database.ref('/pack'), Pack)
             .map((packs: Array<any>) => packs.filter(pack => pack.id + '' === this.packId + '')[ 0 ])
-            .flatMap((pack: Pack) => {
-                return pack.getCards()
-                    .map((cards: Array<any>) => ({
-                        pack: pack,
-                        cards: cards
-                            .filter(card => {
-                                return (card.pack_id + '' === this.packId + '')
-                                    && card.deleted !== 1
-                                    && card.deleted !== 'true';
-                            })
-                    }));
-            })
+            .flatMap((pack: Pack) => pack.getCards()
+                .flatMap((cards: Array<Card>) => Observable.zip(...cards
+                    .filter((card: Card) => !card.getDeleted())
+                    .map(card => card.getAnswers()
+                        .map((answers: Array<Answer>) => ({answers, card})))))
+                .map((cards: Array<{ card: Card, answers: Array<Answer> }>) => ({
+                    pack,
+                    cards
+                })))
             .subscribe(({pack, cards}: { pack: Pack, cards: Array<any> }) => {
                 this.pack = pack;
                 this.cards = cards;
+                console.log(cards);
                 this.ref.detectChanges();
             });
     }

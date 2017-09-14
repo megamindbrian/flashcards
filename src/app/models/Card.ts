@@ -72,11 +72,11 @@ export class Card extends DbDeletableObject<Card> implements AnswerCollection,
 
     public addAnswer = (item: Answer) => this.add('answers', item);
     public removeAnswer = (item: Answer) => this.remove('answers', item);
-    public getAnswers = () => Observable.of([] as Array<Answer>);
+    public getAnswers = (): Observable<Array<Answer>> => this.list('answer', 'card_id', Answer);
 
     public addResponse = (item: Response) => this.add('responses', item);
     public removeResponse = (item: Response) => this.remove('responses', item);
-    public getResponses = () => Observable.of([] as Array<Response>);
+    public getResponses = (): Observable<Array<Response>> => this.list('response', 'card_id', Response);
 
     public setPack = (item?: Pack) => this.setFk<Pack>('pack_id', item);
     public getPackId = () => this.getFkId<Pack>('pack_id');
@@ -86,9 +86,9 @@ export class Card extends DbDeletableObject<Card> implements AnswerCollection,
      * @return Answer
      */
     public getCorrect(): Observable<Answer> {
-        return this.getAnswers().map(a => a.filter((answer: Answer) => {
-            return answer.getCorrect() === true && !answer.getDeleted();
-        })[ 0 ]);
+        return this.getAnswers().map(a => a
+            .filter((answer: Answer) => answer.getCorrect() === true
+                && !answer.getDeleted())[ 0 ]);
     }
 
     /**
