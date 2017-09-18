@@ -1,9 +1,10 @@
 import { Group } from './Group';
 import { DbPropertiesObject } from './DbIdObject';
 import { Observable } from 'rxjs/Observable';
-import { GroupCollection } from './Factories';
+import { UserGroupCollection } from './Factories';
+import { UserGroup } from './UserGroup';
 
-export class BaseUser extends DbPropertiesObject<BaseUser> implements GroupCollection {
+export class BaseUser extends DbPropertiesObject<BaseUser> implements UserGroupCollection {
     static ROLE_DEFAULT = 'ROLE_USER';
     static ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
     /**
@@ -82,9 +83,9 @@ export class BaseUser extends DbPropertiesObject<BaseUser> implements GroupColle
      */
     protected roles: Array<string>;
 
-    public addGroup = (item: Group) => this.add('groups', item);
-    public removeGroup = (item: Group) => this.remove('groups', item);
-    public getGroups = (): Observable<Array<Group>> => this.list('group', 'pack_id', Group);
+    public addUserGroup = (item: UserGroup) => this.add('userGroups', item);
+    public removeUserGroup = (item: UserGroup) => this.remove('userGroups', item);
+    public getUserGroups = (): Observable<Array<UserGroup>> => this.list('user_group', 'user_id', UserGroup);
 
     /**
      * {@inheritdoc}
@@ -184,6 +185,12 @@ export class BaseUser extends DbPropertiesObject<BaseUser> implements GroupColle
                 .filter((elem: string, pos: number, arr: Array<string>) => {
                     return arr.indexOf(elem) === pos;
                 }));
+    }
+
+    public getGroups(): Observable<Array<Group>> {
+        return this.getUserGroups()
+            .flatMap(ugs => Observable.zip(...ugs
+                .map(ug => ug.getGroup())));
     }
 
     /**

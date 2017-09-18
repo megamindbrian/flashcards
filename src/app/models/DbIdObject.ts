@@ -11,7 +11,6 @@ export class DbIdObject {
         [index: string]: Observable<Array<any>>;
     } = {};
     static REBUILD_INDEX = false;
-    [index: string]: any;
     protected created: Date | string;
     protected id: number | string;
 
@@ -81,7 +80,7 @@ export class DbIdObject {
             .join('') + 's';
         // TODO: when in admin row or ACL building mode, go the distance
         // use traditional method of storing a simple list of ids
-        if (!DbIdObject.REBUILD_INDEX && typeof this[ key ] !== 'undefined' && this[ key ] !== null) {
+        if (!DbIdObject.REBUILD_INDEX && typeof (this as any)[ key ] !== 'undefined' && (this as any)[ key ] !== null) {
             if (typeof DbIdObject.subscriptions[ this.$ref.child(key).path ] === 'undefined') {
                 DbIdObject.subscriptions[ this.$ref.child(key).path ] = new ReplaySubject<Array<R>>();
 
@@ -125,14 +124,14 @@ export class DbIdObject {
         }
         const rootPath = this.$ref.root.child(('' + root).replace('_id', ''));
         const key = ('' + root).replace('_id', '') + '_fk';
-        if (!DbIdObject.REBUILD_INDEX && typeof this[ key ] !== 'undefined' && this[ key ] !== null) {
-            return FirebaseObjectFactory<R>(rootPath.child(this[ key ]), type);
+        if (!DbIdObject.REBUILD_INDEX && typeof (this as any)[ key ] !== 'undefined' && (this as any)[ key ] !== null) {
+            return FirebaseObjectFactory<R>(rootPath.child((this as any)[ key ]), type);
         }
 
         let result: R;
         return DbIdObject.list<R>(rootPath, type)
             .map(r => (result = r
-                .filter((up: R) => '' + up.getId() === '' + this[ root ])[ 0 ]))
+                .filter((up: R) => '' + up.getId() === '' + (this as any)[ root ])[ 0 ]))
             .flatMap(() => this.$ref.child(key).set(result.$key))
             .map(() => result);
     }

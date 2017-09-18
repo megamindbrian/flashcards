@@ -1,0 +1,16 @@
+@import '../../assets/colors';
+
+:host {
+    flex-direction: column;
+}
+
+bc-group-row {
+    width: 25%;
+    padding: 10px;
+}
+
+.groups {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}

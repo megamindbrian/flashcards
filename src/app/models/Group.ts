@@ -181,4 +181,11 @@ export class Group extends BaseGroup implements BundleCollection,
         return this.groupPacks;
     }
 
+    public getLogo(): Observable<string> {
+        return this.getFile()
+            .flatMap(is => typeof is !== 'undefined' && is !== null
+                ? Observable.of(is.getUrl())
+                : Observable.of(void 0));
+    }
+
 }

@@ -1,0 +1,68 @@
+@import '../../assets/colors';
+
+.bc-group-row {
+    display: block;
+    padding: 10px;
+    border: 1px solid $light-gray;
+    background: $light-light-gray;
+    text-align: left;
+    border-radius: 1px;
+    position: relative;
+    margin: 0;
+}
+
+.subgroups {
+    border: 1px solid $light-gray;
+    background: $pure-white;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px;
+    overflow: auto;
+}
+
+.subgroups > * {
+    display: block;
+    width: 50%;
+}
+
+.subgroups > *:first-child {
+    color: $gray;
+    width: 100%;
+}
+
+.subgroups > *:nth-child(odd) {
+    text-align: right;
+}
+
+a {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+}
+
+a > * {
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+b {
+    max-width: 200px;
+    justify-content: center;
+    align-items: center;
+    max-height: 150px;
+
+    flex-grow: 1;
+    display: flex;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    flex-direction: column;
+
+    margin: 0 auto;
+}
+
+img {
+    width: auto;
+    max-height: 100%;
+    max-width: 100%;
+}

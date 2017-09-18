@@ -1,3 +1,7 @@
-<p>
-    groups works!
-</p>
+<div>
+    <a routerLink="/groups/0">+ Add new group</a>
+</div>
+
+<div class="groups">
+    <bc-group-row [group]="group" *ngFor="let group of groups"></bc-group-row>
+</div>

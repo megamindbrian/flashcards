@@ -14,6 +14,7 @@ import { BaseUser } from './BaseUser';
 import { Card } from './Card';
 import { File } from './File';
 import { Session } from './Session';
+import { UserGroup } from './UserGroup';
 
 export abstract class DbCollectionForiegnKey<T> extends DbIdObject {
 }
@@ -68,6 +69,14 @@ export interface GroupCollection extends DbCollection<Group> {
     removeGroup(group: Group): Observable<this>;
 
     getGroups(): Observable<Array<Group>>;
+}
+
+export interface UserGroupCollection extends DbCollection<UserGroup> {
+    addUserGroup(group: UserGroup): Observable<this>;
+
+    removeUserGroup(group: UserGroup): Observable<this>;
+
+    getUserGroups(): Observable<Array<UserGroup>>;
 }
 
 export interface GroupCollectionForeignKey<T extends DbIdObject> extends DbCollectionForiegnKey<Group> {

@@ -42,7 +42,7 @@
             </button>
             <a *ngIf="isLogin" md-button [routerLink]="['../register', {redirectUrl: '/subscriptions/cart'}]">
                 {{ 'AUTH.LOGIN.REGISTER' | translate }}</a><br/>
-            <a *ngIf="isLogin" md-button routerLink="../forgot"> <i></i>
+            <a *ngIf="isLogin" md-button routerLink="../forgot">
                 {{ 'AUTH.LOGIN.FORGOT' | translate }}</a>
 
             <button *ngIf="isRegister" md-raised-button color="primary" (click)="onRegister()" type="submit">
